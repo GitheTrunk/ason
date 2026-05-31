@@ -1,7 +1,16 @@
 # Git Rules
 
 1. Never push directly to main
+```
+Branches:
 
+main
+develop
+
+feature/services-nearby
+feature/booking-reviews
+feature/map-gallery-chat
+```
 2. Create branch:
 ```
 git checkout develop
