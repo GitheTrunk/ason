@@ -1,0 +1,125 @@
+import 'package:flutter/material.dart';
+
+class CustomBottomNav extends StatelessWidget {
+  const CustomBottomNav({
+    required this.selectedIndex,
+    required this.onDestinationSelected,
+    super.key,
+  });
+
+  final int selectedIndex;
+  final ValueChanged<int> onDestinationSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(24, 0, 24, 32),
+      height: 72,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(32),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(20),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          _NavItem(
+            icon: Icons.home_rounded,
+            label: 'Home',
+            isSelected: selectedIndex == 0,
+            onTap: () => onDestinationSelected(0),
+          ),
+          _NavItem(
+            icon: Icons.map_rounded,
+            label: 'Map',
+            isSelected: selectedIndex == 1,
+            onTap: () => onDestinationSelected(1),
+          ),
+          _NavItem(
+            icon: Icons.contacts_rounded,
+            label: 'Contacts',
+            isSelected: selectedIndex == 2,
+            onTap: () => onDestinationSelected(2),
+          ),
+          _NavItem(
+            icon: Icons.medical_services_rounded,
+            label: 'First Aid',
+            isSelected: selectedIndex == 3,
+            onTap: () => onDestinationSelected(3),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _NavItem extends StatelessWidget {
+  const _NavItem({
+    required this.icon,
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final activeColor = theme.colorScheme.primary; // SOS Branding color
+    final inactiveColor = Colors.grey.shade400;
+
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 250),
+            curve: Curves.easeInOut,
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: isSelected ? activeColor.withAlpha(25) : Colors.transparent,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              icon,
+              color: isSelected ? activeColor : inactiveColor,
+              size: 26,
+            ),
+          ),
+          const SizedBox(height: 4),
+          AnimatedDefaultTextStyle(
+            duration: const Duration(milliseconds: 250),
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+              color: isSelected ? activeColor : inactiveColor,
+            ),
+            child: Text(label),
+          ),
+          const SizedBox(height: 2),
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 250),
+            height: 3,
+            width: isSelected ? 4 : 0,
+            decoration: BoxDecoration(
+              color: activeColor,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
