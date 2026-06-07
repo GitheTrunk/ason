@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../providers/language_provider.dart';
 
-class CustomBottomNav extends StatelessWidget {
+class CustomBottomNav extends ConsumerWidget {
   const CustomBottomNav({
     required this.selectedIndex,
     required this.onDestinationSelected,
@@ -11,16 +13,19 @@ class CustomBottomNav extends StatelessWidget {
   final ValueChanged<int> onDestinationSelected;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final s = ref.watch(stringsProvider);
     return Container(
       margin: const EdgeInsets.fromLTRB(24, 0, 24, 32),
       height: 72,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(32),
+        border: Border.all(color: theme.dividerColor),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withAlpha(20),
+            color: Colors.black.withAlpha(theme.brightness == Brightness.dark ? 40 : 15),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -31,25 +36,25 @@ class CustomBottomNav extends StatelessWidget {
         children: [
           _NavItem(
             icon: Icons.home_rounded,
-            label: 'Home',
+            label: s.navHome,
             isSelected: selectedIndex == 0,
             onTap: () => onDestinationSelected(0),
           ),
           _NavItem(
             icon: Icons.map_rounded,
-            label: 'Map',
+            label: s.navMap,
             isSelected: selectedIndex == 1,
             onTap: () => onDestinationSelected(1),
           ),
           _NavItem(
             icon: Icons.contacts_rounded,
-            label: 'Contacts',
+            label: s.navContacts,
             isSelected: selectedIndex == 2,
             onTap: () => onDestinationSelected(2),
           ),
           _NavItem(
             icon: Icons.medical_services_rounded,
-            label: 'First Aid',
+            label: s.navFirstAid,
             isSelected: selectedIndex == 3,
             onTap: () => onDestinationSelected(3),
           ),

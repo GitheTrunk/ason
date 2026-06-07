@@ -34,13 +34,16 @@ class ServiceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: theme.dividerColor),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withAlpha(10),
+            color: Colors.black.withAlpha(
+                theme.brightness == Brightness.dark ? 30 : 10),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -70,23 +73,24 @@ class ServiceCard extends StatelessWidget {
                     children: [
                       Text(
                         service.name,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF1A1C1E),
+                          color: theme.colorScheme.onSurface,
                         ),
                       ),
                       const SizedBox(height: 4),
                       Row(
                         children: [
-                          Icon(Icons.phone_rounded, 
-                            size: 14, color: Colors.grey.shade600),
+                          Icon(Icons.phone_rounded,
+                              size: 14,
+                              color: theme.colorScheme.onSurfaceVariant),
                           const SizedBox(width: 4),
                           Text(
                             service.phone,
                             style: TextStyle(
                               fontSize: 14,
-                              color: Colors.grey.shade600,
+                              color: theme.colorScheme.onSurfaceVariant,
                             ),
                           ),
                         ],
@@ -94,7 +98,7 @@ class ServiceCard extends StatelessWidget {
                       const SizedBox(height: 8),
                       Container(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 4),
+                            horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
                           color: _color.withAlpha(15),
                           borderRadius: BorderRadius.circular(6),
@@ -114,7 +118,7 @@ class ServiceCard extends StatelessWidget {
                 ),
                 Icon(
                   Icons.chevron_right_rounded,
-                  color: Colors.grey.shade400,
+                  color: theme.colorScheme.onSurfaceVariant,
                 ),
               ],
             ),

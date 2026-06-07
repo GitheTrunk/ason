@@ -14,8 +14,8 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final servicesAsync = ref.watch(servicesProvider);
 
+    final theme = Theme.of(context);
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
       body: SafeArea(
         child: CustomScrollView(
           slivers: [
@@ -33,7 +33,7 @@ class HomeScreen extends ConsumerWidget {
                           'Good Morning,',
                           style: TextStyle(
                             fontSize: 16,
-                            color: Colors.grey.shade600,
+                            color: theme.colorScheme.onSurfaceVariant,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -42,7 +42,7 @@ class HomeScreen extends ConsumerWidget {
                           style: TextStyle(
                             fontSize: 32,
                             fontWeight: FontWeight.bold,
-                            color: const Color(0xFF1A1C1E),
+                            color: theme.colorScheme.onSurface,
                             letterSpacing: -0.5,
                           ),
                         ),
@@ -63,26 +63,29 @@ class HomeScreen extends ConsumerWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: theme.colorScheme.surface,
                     borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: theme.dividerColor),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withAlpha(5),
+                        color: Colors.black.withAlpha(
+                            theme.brightness == Brightness.dark ? 30 : 5),
                         blurRadius: 15,
                         offset: const Offset(0, 5),
                       ),
                     ],
                   ),
                   child: TextField(
+                    style: TextStyle(color: theme.colorScheme.onSurface),
                     decoration: InputDecoration(
                       hintText: 'Search for emergency services...',
                       hintStyle: TextStyle(
-                        color: Colors.grey.shade400,
+                        color: theme.colorScheme.onSurfaceVariant,
                         fontSize: 15,
                       ),
                       prefixIcon: Icon(
                         Icons.search_rounded,
-                        color: Colors.grey.shade400,
+                        color: theme.colorScheme.onSurfaceVariant,
                       ),
                       border: InputBorder.none,
                       contentPadding: const EdgeInsets.symmetric(vertical: 15),
@@ -144,19 +147,19 @@ class HomeScreen extends ConsumerWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
+                    Text(
                       'Nearby Services',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF1A1C1E),
+                        color: theme.colorScheme.onSurface,
                       ),
                     ),
                     TextButton(
                       onPressed: () {},
                       child: Text(
                         'See all',
-                        style: TextStyle(color: Colors.blue.shade700),
+                        style: TextStyle(color: theme.colorScheme.primary),
                       ),
                     ),
                   ],
@@ -165,16 +168,17 @@ class HomeScreen extends ConsumerWidget {
             ),
 
             servicesAsync.when(
-              loading: () => const SliverFillRemaining(
+              loading: () => SliverFillRemaining(
                 child: Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      CircularProgressIndicator(),
-                      SizedBox(height: 16),
+                      const CircularProgressIndicator(),
+                      const SizedBox(height: 16),
                       Text(
                         'Searching for nearby services...',
-                        style: TextStyle(color: Colors.grey),
+                        style: TextStyle(
+                            color: theme.colorScheme.onSurfaceVariant),
                       ),
                     ],
                   ),
@@ -195,13 +199,14 @@ class HomeScreen extends ConsumerWidget {
                         const SizedBox(height: 16),
                         Text(
                           'Something went wrong',
-                          style: Theme.of(context).textTheme.titleMedium,
+                          style: theme.textTheme.titleMedium,
                         ),
                         const SizedBox(height: 8),
                         Text(
                           error.toString(),
                           textAlign: TextAlign.center,
-                          style: const TextStyle(color: Colors.grey),
+                          style: TextStyle(
+                              color: theme.colorScheme.onSurfaceVariant),
                         ),
                       ],
                     ),
@@ -210,7 +215,7 @@ class HomeScreen extends ConsumerWidget {
               ),
               data: (services) {
                 if (services.isEmpty) {
-                  return const SliverFillRemaining(
+                  return SliverFillRemaining(
                     child: Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -218,15 +223,15 @@ class HomeScreen extends ConsumerWidget {
                           Icon(
                             Icons.search_off_rounded,
                             size: 64,
-                            color: Colors.grey,
+                            color: theme.colorScheme.onSurfaceVariant,
                           ),
-                          SizedBox(height: 16),
+                          const SizedBox(height: 16),
                           Text(
                             'No emergency services found',
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w500,
-                              color: Colors.grey,
+                              color: theme.colorScheme.onSurfaceVariant,
                             ),
                           ),
                         ],
