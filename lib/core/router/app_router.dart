@@ -7,7 +7,7 @@ import '../../features/chat/chat_screen.dart';
 import '../../features/contacts/contacts_screen.dart';
 import '../../features/detail/detail_screen.dart';
 import '../../features/favorites/favorites_screen.dart';
-import '../../features/first_aid/first_aid_screen.dart';
+import '../../features/first_aid/screens/first_aid_screen.dart';
 import '../../features/gallery/gallery_screen.dart';
 import '../../features/home/home_screen.dart';
 import '../../features/map/map_screen.dart';
@@ -18,7 +18,8 @@ import '../../features/reviews/reviews_screen.dart';
 import '../../features/settings/settings_screen.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
-final GlobalKey<NavigatorState> _shellNavigatorKey = GlobalKey<NavigatorState>();
+final GlobalKey<NavigatorState> _shellNavigatorKey =
+    GlobalKey<NavigatorState>();
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
@@ -53,10 +54,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           ),
         ],
       ),
-      GoRoute(
-        path: '/',
-        redirect: (_, state) => '/home',
-      ),
+      GoRoute(path: '/', redirect: (_, state) => '/home'),
       GoRoute(
         parentNavigatorKey: _rootNavigatorKey,
         path: '/nearby',
