@@ -55,7 +55,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/',
-        redirect: (_, __) => '/home',
+        redirect: (_, state) => '/home',
       ),
       GoRoute(
         parentNavigatorKey: _rootNavigatorKey,
