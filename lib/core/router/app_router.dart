@@ -90,9 +90,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         parentNavigatorKey: _rootNavigatorKey,
-        path: '/reviews',
+        path: '/reviews/:serviceId',
         name: 'reviews',
-        builder: (context, state) => const ReviewsScreen(),
+        builder: (context, state) {
+          final serviceId = state.pathParameters['serviceId']!;
+          return ReviewsScreen(serviceId: serviceId);
+        },
       ),
       GoRoute(
         parentNavigatorKey: _rootNavigatorKey,
