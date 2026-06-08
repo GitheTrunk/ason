@@ -34,29 +34,37 @@ class CustomBottomNav extends ConsumerWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          _NavItem(
-            icon: Icons.home_rounded,
-            label: s.navHome,
-            isSelected: selectedIndex == 0,
-            onTap: () => onDestinationSelected(0),
+          Expanded(
+            child: _NavItem(
+              icon: Icons.home_rounded,
+              label: s.navHome,
+              isSelected: selectedIndex == 0,
+              onTap: () => onDestinationSelected(0),
+            ),
           ),
-          _NavItem(
-            icon: Icons.map_rounded,
-            label: s.navMap,
-            isSelected: selectedIndex == 1,
-            onTap: () => onDestinationSelected(1),
+          Expanded(
+            child: _NavItem(
+              icon: Icons.map_rounded,
+              label: s.navMap,
+              isSelected: selectedIndex == 1,
+              onTap: () => onDestinationSelected(1),
+            ),
           ),
-          _NavItem(
-            icon: Icons.contacts_rounded,
-            label: s.navContacts,
-            isSelected: selectedIndex == 2,
-            onTap: () => onDestinationSelected(2),
+          Expanded(
+            child: _NavItem(
+              icon: Icons.contacts_rounded,
+              label: s.navContacts,
+              isSelected: selectedIndex == 2,
+              onTap: () => onDestinationSelected(2),
+            ),
           ),
-          _NavItem(
-            icon: Icons.medical_services_rounded,
-            label: s.navFirstAid,
-            isSelected: selectedIndex == 3,
-            onTap: () => onDestinationSelected(3),
+          Expanded(
+            child: _NavItem(
+              icon: Icons.medical_services_rounded,
+              label: s.navFirstAid,
+              isSelected: selectedIndex == 3,
+              onTap: () => onDestinationSelected(3),
+            ),
           ),
         ],
       ),
@@ -88,6 +96,7 @@ class _NavItem extends StatelessWidget {
       behavior: HitTestBehavior.opaque,
       child: Column(
         mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           AnimatedContainer(
             duration: const Duration(milliseconds: 250),
@@ -100,18 +109,23 @@ class _NavItem extends StatelessWidget {
             child: Icon(
               icon,
               color: isSelected ? activeColor : inactiveColor,
-              size: 26,
+              size: 24,
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 2),
           AnimatedDefaultTextStyle(
             duration: const Duration(milliseconds: 250),
             style: TextStyle(
-              fontSize: 12,
+              fontSize: 11,
               fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
               color: isSelected ? activeColor : inactiveColor,
             ),
-            child: Text(label),
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+            ),
           ),
           const SizedBox(height: 2),
           AnimatedContainer(
