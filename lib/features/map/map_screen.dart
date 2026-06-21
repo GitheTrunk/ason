@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:latlong2/latlong.dart';
 
+import '../../providers/language_provider.dart';
 import '../../providers/map_provider.dart';
 import 'widgets/map_filter_chips.dart';
 import 'widgets/service_detail_sheet.dart';
@@ -44,6 +46,7 @@ class _MapScreenState extends ConsumerState<MapScreen>
     final filteredAsync = ref.watch(filteredServicesProvider);
     final selectedService = ref.watch(selectedServiceProvider);
     final filterState = ref.watch(mapFilterProvider);
+    final strings = ref.watch(stringsProvider);
 
     return Scaffold(
       body: Stack(
@@ -64,9 +67,8 @@ class _MapScreenState extends ConsumerState<MapScreen>
             children: [
               // Base tile layer (OpenStreetMap)
               TileLayer(
-                urlTemplate:
-                    'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                userAgentPackageName: 'com.example.ason',
+                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                userAgentPackageName: 'com.ason.emergencyservices',
               ),
 
               // Markers
@@ -80,7 +82,7 @@ class _MapScreenState extends ConsumerState<MapScreen>
                       width: 56,
                       height: 56,
                       child: ServiceMarker(
-                        type: service.type,
+                        type: service.typeEn,
                         isSelected: isSelected,
                         onTap: () {
                           ref
@@ -109,7 +111,9 @@ class _MapScreenState extends ConsumerState<MapScreen>
                   padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
                   child: Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 12),
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(20),
@@ -129,10 +133,10 @@ class _MapScreenState extends ConsumerState<MapScreen>
                           size: 22,
                         ),
                         const SizedBox(width: 10),
-                        const Expanded(
+                        Expanded(
                           child: Text(
-                            'Emergency Services Map',
-                            style: TextStyle(
+                            strings.emergencyServicesMap,
+                            style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
                               color: Color(0xFF1A1C1E),
@@ -142,13 +146,15 @@ class _MapScreenState extends ConsumerState<MapScreen>
                         filteredAsync.when(
                           data: (services) => Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 4),
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
                             decoration: BoxDecoration(
                               color: const Color(0xFF5C6BC0).withAlpha(20),
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: Text(
-                              '${services.length} found',
+                              strings.servicesFound(services.length),
                               style: const TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w600,
@@ -191,7 +197,9 @@ class _MapScreenState extends ConsumerState<MapScreen>
               child: Center(
                 child: Container(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 20, vertical: 12),
+                    horizontal: 20,
+                    vertical: 12,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(30),
@@ -202,10 +210,10 @@ class _MapScreenState extends ConsumerState<MapScreen>
                       ),
                     ],
                   ),
-                  child: const Row(
+                  child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      SizedBox(
+                      const SizedBox(
                         width: 16,
                         height: 16,
                         child: CircularProgressIndicator(
@@ -213,10 +221,10 @@ class _MapScreenState extends ConsumerState<MapScreen>
                           valueColor: AlwaysStoppedAnimation(Color(0xFF5C6BC0)),
                         ),
                       ),
-                      SizedBox(width: 10),
+                      const SizedBox(width: 10),
                       Text(
-                        'Loading services...',
-                        style: TextStyle(
+                        strings.loadingServices,
+                        style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
                           color: Color(0xFF374151),
@@ -243,12 +251,11 @@ class _MapScreenState extends ConsumerState<MapScreen>
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.error_outline,
-                        color: Color(0xFFE53935)),
+                    const Icon(Icons.error_outline, color: Color(0xFFE53935)),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        'Failed to load services. Check your connection.',
+                        strings.failedToLoadServices,
                         style: const TextStyle(
                           fontSize: 13,
                           color: Color(0xFFB71C1C),
@@ -300,6 +307,8 @@ class _MapScreenState extends ConsumerState<MapScreen>
                       ),
                       zoom: 17,
                     ),
+                    onViewDetails: () =>
+                        context.push('/detail/${selectedService.id}'),
                   ),
                 ),
               ),

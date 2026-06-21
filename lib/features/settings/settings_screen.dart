@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../providers/settings_provider.dart';
 
+bool _isKh(String lang) => lang == 'km' || lang == 'kh';
+
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
 
@@ -21,9 +23,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final theme = Theme.of(context);
 
     return settingsAsync.when(
-      loading: () => const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      ),
+      loading: () =>
+          const Scaffold(body: Center(child: CircularProgressIndicator())),
       error: (e, _) => Scaffold(body: Center(child: Text('Error: $e'))),
       data: (settings) => Scaffold(
         appBar: AppBar(
@@ -37,12 +38,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           children: [
             const SizedBox(height: 8),
             // Profile
-            _SectionHeader(title: settings.language == 'kh' ? 'គណនី' : 'Profile'),
+            _SectionHeader(
+              title: _isKh(settings.language) ? 'គណនី' : 'Profile',
+            ),
             _ProfileCard(theme: theme),
             const SizedBox(height: 24),
 
             // Appearance
-            _SectionHeader(title: settings.language == 'kh' ? 'រូបរាង' : 'Appearance'),
+            _SectionHeader(
+              title: _isKh(settings.language) ? 'រូបរាង' : 'Appearance',
+            ),
             _SettingsCard(
               theme: theme,
               children: [
@@ -50,7 +55,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   theme: theme,
                   icon: Icons.dark_mode_outlined,
                   iconColor: Colors.indigo.shade400,
-                  title: settings.language == 'kh' ? 'របៀបងងឹត' : 'Dark Mode',
+                  title: _isKh(settings.language) ? 'របៀបងងឹត' : 'Dark Mode',
                   value: settings.themeMode == ThemeMode.dark,
                   onChanged: (v) => ref
                       .read(settingsProvider.notifier)
@@ -60,7 +65,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 _LanguageRow(
                   theme: theme,
                   selected: settings.language,
-                  label: settings.language == 'kh' ? 'ភាសា' : 'Language',
+                  label: _isKh(settings.language) ? 'ភាសា' : 'Language',
                   onChanged: (lang) =>
                       ref.read(settingsProvider.notifier).setLanguage(lang),
                 ),
@@ -70,15 +75,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
             // Medical Info
             _SectionHeader(
-                title: settings.language == 'kh'
-                    ? 'ព័ត៌មានវេជ្ជសាស្ត្រ'
-                    : 'Medical Info'),
+              title: _isKh(settings.language)
+                  ? 'ព័ត៌មានវេជ្ជសាស្ត្រ'
+                  : 'Medical Info',
+            ),
             _MedicalInfoCard(settings: settings, theme: theme),
             const SizedBox(height: 24),
 
             // Notifications
             _SectionHeader(
-                title: settings.language == 'kh' ? 'ការជូនដំណឹង' : 'Notifications'),
+              title: _isKh(settings.language) ? 'ការជូនដំណឹង' : 'Notifications',
+            ),
             _SettingsCard(
               theme: theme,
               children: [
@@ -86,10 +93,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   theme: theme,
                   icon: Icons.notifications_outlined,
                   iconColor: Colors.blue.shade400,
-                  title: settings.language == 'kh'
+                  title: _isKh(settings.language)
                       ? 'ការជូនដំណឹងជំរុញ'
                       : 'Push Notifications',
-                  subtitle: settings.language == 'kh'
+                  subtitle: _isKh(settings.language)
                       ? 'ទទួលការជូនដំណឹងអំពីអាសន្ន'
                       : 'Receive alerts for nearby emergencies',
                   value: _notificationsEnabled,
@@ -101,7 +108,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
             // Privacy
             _SectionHeader(
-                title: settings.language == 'kh' ? 'ឯកជនភាព' : 'Privacy'),
+              title: _isKh(settings.language) ? 'ឯកជនភាព' : 'Privacy',
+            ),
             _SettingsCard(
               theme: theme,
               children: [
@@ -109,10 +117,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   theme: theme,
                   icon: Icons.location_on_outlined,
                   iconColor: Colors.green.shade400,
-                  title: settings.language == 'kh'
+                  title: _isKh(settings.language)
                       ? 'ការចូលទីតាំង'
                       : 'Location Access',
-                  subtitle: settings.language == 'kh'
+                  subtitle: _isKh(settings.language)
                       ? 'ប្រើដើម្បីស្វែងរកសេវាដែលនៅជិត'
                       : 'Used to find services near you',
                   value: _locationEnabled,
@@ -124,9 +132,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
             // Emergency Contacts
             _SectionHeader(
-                title: settings.language == 'kh'
-                    ? 'ទំនាក់ទំនងបន្ទាន់'
-                    : 'Emergency Contacts'),
+              title: _isKh(settings.language)
+                  ? 'ទំនាក់ទំនងបន្ទាន់'
+                  : 'Emergency Contacts',
+            ),
             _SettingsCard(
               theme: theme,
               children: [
@@ -134,10 +143,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   theme: theme,
                   icon: Icons.people_outline_rounded,
                   iconColor: Colors.orange.shade400,
-                  title: settings.language == 'kh'
+                  title: _isKh(settings.language)
                       ? 'គ្រប់គ្រងទំនាក់ទំនង'
                       : 'Manage Contacts',
-                  subtitle: settings.language == 'kh'
+                  subtitle: _isKh(settings.language)
                       ? 'បន្ថែម ឬ លុបទំនាក់ទំនងបន្ទាន់'
                       : 'Add or remove emergency contacts',
                   onTap: () => context.push('/contacts'),
@@ -147,7 +156,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             const SizedBox(height: 16),
 
             // About
-            _SectionHeader(title: settings.language == 'kh' ? 'អំពី' : 'About'),
+            _SectionHeader(title: _isKh(settings.language) ? 'អំពី' : 'About'),
             _SettingsCard(
               theme: theme,
               children: [
@@ -155,7 +164,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   theme: theme,
                   icon: Icons.info_outline_rounded,
                   iconColor: Colors.grey.shade500,
-                  title: settings.language == 'kh' ? 'កំណែ' : 'App Version',
+                  title: _isKh(settings.language) ? 'កំណែ' : 'App Version',
                   value: '1.0.0',
                 ),
                 Divider(height: 1, indent: 56, color: theme.dividerColor),
@@ -163,7 +172,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   theme: theme,
                   icon: Icons.shield_outlined,
                   iconColor: Colors.grey.shade500,
-                  title: settings.language == 'kh'
+                  title: _isKh(settings.language)
                       ? 'គោលការណ៍ភាពឯកជន'
                       : 'Privacy Policy',
                   onTap: () {},
@@ -173,7 +182,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   theme: theme,
                   icon: Icons.description_outlined,
                   iconColor: Colors.grey.shade500,
-                  title: settings.language == 'kh'
+                  title: _isKh(settings.language)
                       ? 'លក្ខខណ្ឌប្រើប្រាស់'
                       : 'Terms of Service',
                   onTap: () {},
@@ -189,7 +198,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   theme: theme,
                   icon: Icons.logout_rounded,
                   iconColor: Colors.red.shade400,
-                  title: settings.language == 'kh' ? 'ចាកចេញ' : 'Sign Out',
+                  title: _isKh(settings.language) ? 'ចាកចេញ' : 'Sign Out',
                   titleColor: Colors.red.shade400,
                   onTap: () => _confirmSignOut(context, settings.language),
                 ),
@@ -206,19 +215,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(lang == 'kh' ? 'ចាកចេញ' : 'Sign Out'),
-        content: Text(lang == 'kh'
-            ? 'តើអ្នកពិតជាចង់ចាកចេញ?'
-            : 'Are you sure you want to sign out?'),
+        title: Text(_isKh(lang) ? 'ចាកចេញ' : 'Sign Out'),
+        content: Text(
+          _isKh(lang)
+              ? 'តើអ្នកពិតជាចង់ចាកចេញ?'
+              : 'Are you sure you want to sign out?',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text(lang == 'kh' ? 'បោះបង់' : 'Cancel'),
+            child: Text(_isKh(lang) ? 'បោះបង់' : 'Cancel'),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx),
             child: Text(
-              lang == 'kh' ? 'ចាកចេញ' : 'Sign Out',
+              _isKh(lang) ? 'ចាកចេញ' : 'Sign Out',
               style: TextStyle(color: Colors.red.shade400),
             ),
           ),
@@ -255,8 +266,11 @@ class _LanguageRow extends StatelessWidget {
               color: Colors.teal.shade400.withAlpha(30),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(Icons.language_rounded,
-                color: Colors.teal.shade400, size: 20),
+            child: Icon(
+              Icons.language_rounded,
+              color: Colors.teal.shade400,
+              size: 20,
+            ),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -269,7 +283,11 @@ class _LanguageRow extends StatelessWidget {
               ),
             ),
           ),
-          _LanguageToggle(theme: theme, selected: selected, onChanged: onChanged),
+          _LanguageToggle(
+            theme: theme,
+            selected: selected,
+            onChanged: onChanged,
+          ),
         ],
       ),
     );
@@ -277,8 +295,11 @@ class _LanguageRow extends StatelessWidget {
 }
 
 class _LanguageToggle extends StatelessWidget {
-  const _LanguageToggle(
-      {required this.theme, required this.selected, required this.onChanged});
+  const _LanguageToggle({
+    required this.theme,
+    required this.selected,
+    required this.onChanged,
+  });
 
   final ThemeData theme;
   final String selected;
@@ -295,9 +316,17 @@ class _LanguageToggle extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           _LangChip(
-              label: 'EN', value: 'en', selected: selected, onTap: onChanged),
+            label: 'EN',
+            value: 'en',
+            selected: selected,
+            onTap: onChanged,
+          ),
           _LangChip(
-              label: 'ខ្មែរ', value: 'kh', selected: selected, onTap: onChanged),
+            label: 'ខ្មែរ',
+            value: 'km',
+            selected: selected,
+            onTap: onChanged,
+          ),
         ],
       ),
     );
@@ -324,8 +353,7 @@ class _LangChip extends StatelessWidget {
       onTap: () => onTap(value),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding:
-            const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
         decoration: BoxDecoration(
           color: isActive ? Colors.teal.shade500 : Colors.transparent,
           borderRadius: BorderRadius.circular(10),
@@ -359,7 +387,14 @@ class _MedicalInfoCard extends ConsumerStatefulWidget {
 
 class _MedicalInfoCardState extends ConsumerState<_MedicalInfoCard> {
   static const _bloodGroups = [
-    'A+', 'A−', 'B+', 'B−', 'AB+', 'AB−', 'O+', 'O−'
+    'A+',
+    'A−',
+    'B+',
+    'B−',
+    'AB+',
+    'AB−',
+    'O+',
+    'O−',
   ];
 
   late String? _bloodGroup;
@@ -370,8 +405,9 @@ class _MedicalInfoCardState extends ConsumerState<_MedicalInfoCard> {
   void initState() {
     super.initState();
     _bloodGroup = widget.settings.bloodGroup;
-    _allergiesController =
-        TextEditingController(text: widget.settings.allergies ?? '');
+    _allergiesController = TextEditingController(
+      text: widget.settings.allergies ?? '',
+    );
   }
 
   @override
@@ -382,7 +418,9 @@ class _MedicalInfoCardState extends ConsumerState<_MedicalInfoCard> {
 
   Future<void> _save() async {
     setState(() => _saving = true);
-    await ref.read(settingsProvider.notifier).saveMedicalInfo(
+    await ref
+        .read(settingsProvider.notifier)
+        .saveMedicalInfo(
           bloodGroup: _bloodGroup,
           allergies: _allergiesController.text.trim().isEmpty
               ? null
@@ -393,7 +431,8 @@ class _MedicalInfoCardState extends ConsumerState<_MedicalInfoCard> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-              widget.settings.language == 'kh' ? 'បានរក្សាទុក' : 'Saved'),
+            _isKh(widget.settings.language) ? 'បានរក្សាទុក' : 'Saved',
+          ),
           behavior: SnackBarBehavior.floating,
           duration: const Duration(seconds: 2),
         ),
@@ -418,7 +457,7 @@ class _MedicalInfoCardState extends ConsumerState<_MedicalInfoCard> {
         children: [
           // Blood Group label
           Text(
-            lang == 'kh' ? 'ក្រុមឈាម' : 'Blood Group',
+            _isKh(lang) ? 'ក្រុមឈាម' : 'Blood Group',
             style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w600,
@@ -436,7 +475,9 @@ class _MedicalInfoCardState extends ConsumerState<_MedicalInfoCard> {
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 180),
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 16, vertical: 8),
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
                     color: isSelected
                         ? Colors.red.shade600
@@ -465,7 +506,7 @@ class _MedicalInfoCardState extends ConsumerState<_MedicalInfoCard> {
           const SizedBox(height: 20),
 
           Text(
-            lang == 'kh' ? 'អាឡែស៊ី' : 'Allergies',
+            _isKh(lang) ? 'អាឡែស៊ី' : 'Allergies',
             style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w600,
@@ -478,7 +519,7 @@ class _MedicalInfoCardState extends ConsumerState<_MedicalInfoCard> {
             maxLines: 3,
             style: TextStyle(color: theme.colorScheme.onSurface),
             decoration: InputDecoration(
-              hintText: lang == 'kh'
+              hintText: _isKh(lang)
                   ? 'ឧ. ប៉េនីស៊ីលីន ប្រូហ្វេន...'
                   : 'e.g. Penicillin, Ibuprofen...',
             ),
@@ -493,7 +534,8 @@ class _MedicalInfoCardState extends ConsumerState<_MedicalInfoCard> {
                 backgroundColor: Colors.red.shade600,
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14)),
+                  borderRadius: BorderRadius.circular(14),
+                ),
                 elevation: 0,
               ),
               child: _saving
@@ -501,12 +543,16 @@ class _MedicalInfoCardState extends ConsumerState<_MedicalInfoCard> {
                       width: 20,
                       height: 20,
                       child: CircularProgressIndicator(
-                          strokeWidth: 2, color: Colors.white),
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
                     )
                   : Text(
-                      lang == 'kh' ? 'រក្សាទុក' : 'Save',
+                      _isKh(lang) ? 'រក្សាទុក' : 'Save',
                       style: const TextStyle(
-                          fontSize: 15, fontWeight: FontWeight.bold),
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
             ),
           ),
@@ -578,8 +624,11 @@ class _ProfileCard extends StatelessWidget {
           CircleAvatar(
             radius: 30,
             backgroundColor: theme.colorScheme.primaryContainer,
-            child: Icon(Icons.person_rounded,
-                size: 34, color: theme.colorScheme.primary),
+            child: Icon(
+              Icons.person_rounded,
+              size: 34,
+              color: theme.colorScheme.primary,
+            ),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -605,8 +654,10 @@ class _ProfileCard extends StatelessWidget {
               ],
             ),
           ),
-          Icon(Icons.chevron_right_rounded,
-              color: theme.colorScheme.onSurfaceVariant),
+          Icon(
+            Icons.chevron_right_rounded,
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
         ],
       ),
     );
@@ -737,8 +788,10 @@ class _NavTile extends StatelessWidget {
                 ],
               ),
             ),
-            Icon(Icons.chevron_right_rounded,
-                color: theme.colorScheme.onSurfaceVariant),
+            Icon(
+              Icons.chevron_right_rounded,
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
           ],
         ),
       ),

@@ -1,16 +1,15 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/emergency_service.dart';
-import 'emergency_provider.dart';
+import 'repository_providers.dart';
 
 final serviceByIdProvider = FutureProvider.family<EmergencyService?, String>((
   ref,
   id,
 ) async {
-  final services = await ref.watch(servicesProvider.future);
-
   try {
-    return services.firstWhere((service) => service.id == id);
+    final repository = ref.watch(emergencyRepositoryProvider);
+    return repository.getService(id);
   } catch (_) {
     return null;
   }
