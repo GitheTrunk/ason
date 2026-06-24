@@ -20,10 +20,26 @@ class SupabasePersonalContactRepository implements PersonalContactRepository {
 
   @override
   Future<PersonalContact> addContact(PersonalContact contact) async {
+    final user = service.client.auth.currentUser;
+    String? userName;
+
+    if (user != null) {
+      try {
+        final profileData = await service.client
+            .from('profiles')
+            .select('name')
+            .eq('id', user.id)
+            .maybeSingle();
+        userName = profileData?['name'] as String?;
+      } catch (_) {}
+    }
+
     final payload = <String, dynamic>{
       'name': contact.name,
       'phone': contact.phone,
       if (contact.relationship != null) 'relationship': contact.relationship,
+      if (user != null) 'user_id': user.id,
+      if (userName != null) 'user_name': userName,
     };
     final data = await service.client
         .from('personal_contacts')
