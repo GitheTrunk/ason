@@ -4,7 +4,7 @@ import 'package:ason/features/home/widgets/sos_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-
+import '../../providers/language_provider.dart';
 import '../../providers/emergency_provider.dart';
 
 class HomeScreen extends ConsumerWidget {
@@ -13,6 +13,7 @@ class HomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final servicesAsync = ref.watch(servicesProvider);
+    final strings = ref.watch(stringsProvider);
 
     final theme = Theme.of(context);
     return Scaffold(
@@ -30,7 +31,7 @@ class HomeScreen extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Good Morning,',
+                          strings.greeting,
                           style: TextStyle(
                             fontSize: 16,
                             color: theme.colorScheme.onSurfaceVariant,
@@ -69,7 +70,8 @@ class HomeScreen extends ConsumerWidget {
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withAlpha(
-                            theme.brightness == Brightness.dark ? 30 : 5),
+                          theme.brightness == Brightness.dark ? 30 : 5,
+                        ),
                         blurRadius: 15,
                         offset: const Offset(0, 5),
                       ),
@@ -78,7 +80,7 @@ class HomeScreen extends ConsumerWidget {
                   child: TextField(
                     style: TextStyle(color: theme.colorScheme.onSurface),
                     decoration: InputDecoration(
-                      hintText: 'Search for emergency services...',
+                      hintText: strings.searchEmergency,
                       hintStyle: TextStyle(
                         color: theme.colorScheme.onSurfaceVariant,
                         fontSize: 15,
@@ -117,21 +119,33 @@ class HomeScreen extends ConsumerWidget {
                   child: Row(
                     children: [
                       CategoryButton(
-                        label: 'Hospital',
+                        label: strings.hospital,
                         icon: Icons.local_hospital_rounded,
                         color: Colors.red.shade600,
                         onTap: () {},
                       ),
                       CategoryButton(
-                        label: 'Police',
+                        label: strings.police,
                         icon: Icons.local_police_rounded,
                         color: Colors.blue.shade700,
                         onTap: () {},
                       ),
                       CategoryButton(
-                        label: 'Fire Station',
+                        label: strings.fireStation,
                         icon: Icons.fire_truck_rounded,
                         color: Colors.orange.shade800,
+                        onTap: () {},
+                      ),
+                      CategoryButton(
+                        label: strings.ambulance,
+                        icon: Icons.emergency_rounded,
+                        color: Colors.green.shade700,
+                        onTap: () {},
+                      ),
+                      CategoryButton(
+                        label: strings.pharmacy,
+                        icon: Icons.local_pharmacy_rounded,
+                        color: Colors.teal.shade600,
                         onTap: () {},
                       ),
                     ],
@@ -148,7 +162,7 @@ class HomeScreen extends ConsumerWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Nearby Services',
+                      strings.nearbyServices,
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -158,7 +172,7 @@ class HomeScreen extends ConsumerWidget {
                     TextButton(
                       onPressed: () {},
                       child: Text(
-                        'See all',
+                        strings.seeAll,
                         style: TextStyle(color: theme.colorScheme.primary),
                       ),
                     ),
@@ -176,9 +190,10 @@ class HomeScreen extends ConsumerWidget {
                       const CircularProgressIndicator(),
                       const SizedBox(height: 16),
                       Text(
-                        'Searching for nearby services...',
+                        strings.searchingServices,
                         style: TextStyle(
-                            color: theme.colorScheme.onSurfaceVariant),
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
                       ),
                     ],
                   ),
@@ -198,7 +213,7 @@ class HomeScreen extends ConsumerWidget {
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          'Something went wrong',
+                          strings.somethingWentWrong,
                           style: theme.textTheme.titleMedium,
                         ),
                         const SizedBox(height: 8),
@@ -206,7 +221,8 @@ class HomeScreen extends ConsumerWidget {
                           error.toString(),
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                              color: theme.colorScheme.onSurfaceVariant),
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
                         ),
                       ],
                     ),
@@ -227,7 +243,7 @@ class HomeScreen extends ConsumerWidget {
                           ),
                           const SizedBox(height: 16),
                           Text(
-                            'No emergency services found',
+                            strings.noServicesFound,
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w500,

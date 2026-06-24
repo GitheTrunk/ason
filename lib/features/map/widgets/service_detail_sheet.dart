@@ -1,21 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../models/emergency_service.dart';
+import '../../../providers/language_provider.dart';
 
-class ServiceDetailSheet extends StatelessWidget {
+class ServiceDetailSheet extends ConsumerWidget {
   const ServiceDetailSheet({
     super.key,
     required this.service,
     required this.onClose,
     required this.onNavigate,
+    required this.onViewDetails,
   });
 
   final EmergencyService service;
   final VoidCallback onClose;
   final VoidCallback onNavigate;
+  final VoidCallback onViewDetails;
 
   Color get _typeColor {
-    switch (service.type.toLowerCase()) {
+    switch (service.typeEn.toLowerCase()) {
       case 'hospital':
         return const Color(0xFFE53935);
       case 'police':
@@ -24,13 +28,15 @@ class ServiceDetailSheet extends StatelessWidget {
         return const Color(0xFFE65100);
       case 'ambulance':
         return const Color(0xFF2E7D32);
+      case 'pharmacy':
+        return const Color(0xFF00897B);
       default:
         return const Color(0xFF5C6BC0);
     }
   }
 
   IconData get _typeIcon {
-    switch (service.type.toLowerCase()) {
+    switch (service.typeEn.toLowerCase()) {
       case 'hospital':
         return Icons.local_hospital_rounded;
       case 'police':
@@ -39,13 +45,21 @@ class ServiceDetailSheet extends StatelessWidget {
         return Icons.fire_truck_rounded;
       case 'ambulance':
         return Icons.emergency_rounded;
+      case 'pharmacy':
+        return Icons.local_pharmacy_rounded;
       default:
         return Icons.place_rounded;
     }
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final lang = ref.watch(languageProvider);
+    final strings = ref.watch(stringsProvider);
+    final serviceName = service.localizedName(lang);
+    final serviceType = service.localizedType(lang);
+    final serviceAddress = service.localizedAddress(lang);
+
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
       decoration: BoxDecoration(
@@ -111,7 +125,7 @@ class ServiceDetailSheet extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        service.name,
+                        serviceName,
                         style: const TextStyle(
                           fontSize: 17,
                           fontWeight: FontWeight.bold,
@@ -121,13 +135,15 @@ class ServiceDetailSheet extends StatelessWidget {
                       const SizedBox(height: 4),
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 3),
+                          horizontal: 8,
+                          vertical: 3,
+                        ),
                         decoration: BoxDecoration(
                           color: _typeColor.withAlpha(20),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
-                          service.type,
+                          serviceType,
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
@@ -140,8 +156,10 @@ class ServiceDetailSheet extends StatelessWidget {
                 ),
                 // Rating
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFFF8E1),
                     borderRadius: BorderRadius.circular(8),
@@ -149,8 +167,11 @@ class ServiceDetailSheet extends StatelessWidget {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.star_rounded,
-                          color: Color(0xFFFFA000), size: 14),
+                      const Icon(
+                        Icons.star_rounded,
+                        color: Color(0xFFFFA000),
+                        size: 14,
+                      ),
                       const SizedBox(width: 3),
                       Text(
                         service.rating.toStringAsFixed(1),
@@ -173,7 +194,7 @@ class ServiceDetailSheet extends StatelessWidget {
             // Address
             _InfoRow(
               icon: Icons.location_on_outlined,
-              text: service.address,
+              text: serviceAddress,
               iconColor: const Color(0xFF5C6BC0),
             ),
             const SizedBox(height: 10),
@@ -193,7 +214,7 @@ class ServiceDetailSheet extends StatelessWidget {
                 Expanded(
                   child: _ActionButton(
                     icon: Icons.call_rounded,
-                    label: 'Call',
+                    label: strings.call,
                     color: const Color(0xFF2E7D32),
                     onTap: () {},
                   ),
@@ -202,7 +223,7 @@ class ServiceDetailSheet extends StatelessWidget {
                 Expanded(
                   child: _ActionButton(
                     icon: Icons.directions_rounded,
-                    label: 'Directions',
+                    label: strings.directions,
                     color: const Color(0xFF1565C0),
                     onTap: onNavigate,
                   ),
@@ -210,10 +231,10 @@ class ServiceDetailSheet extends StatelessWidget {
                 const SizedBox(width: 12),
                 Expanded(
                   child: _ActionButton(
-                    icon: Icons.bookmark_outline_rounded,
-                    label: 'Save',
+                    icon: Icons.info_outline_rounded,
+                    label: strings.viewDetails,
                     color: const Color(0xFF5C6BC0),
-                    onTap: () {},
+                    onTap: onViewDetails,
                   ),
                 ),
               ],

@@ -1,5 +1,6 @@
 import 'package:ason/features/detail/widgets/quick_action_button.dart';
 import 'package:ason/providers/detail_provider.dart';
+import 'package:ason/providers/language_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -10,42 +11,65 @@ class DetailScreen extends ConsumerWidget {
 
   IconData _getIcon(String type) {
     switch (type.toLowerCase()) {
-      case 'hospital': return Icons.local_hospital_rounded;
-      case 'police': return Icons.local_police_rounded;
-      case 'fire': return Icons.fire_truck_rounded;
-      default: return Icons.location_on_rounded;
+      case 'hospital':
+        return Icons.local_hospital_rounded;
+      case 'police':
+        return Icons.local_police_rounded;
+      case 'fire station':
+        return Icons.fire_truck_rounded;
+      case 'ambulance':
+        return Icons.emergency_rounded;
+      case 'pharmacy':
+        return Icons.local_pharmacy_rounded;
+      default:
+        return Icons.location_on_rounded;
     }
   }
 
   Color _getColor(String type) {
     switch (type.toLowerCase()) {
-      case 'hospital': return Colors.red.shade600;
-      case 'police': return Colors.blue.shade700;
-      case 'fire': return Colors.orange.shade800;
-      default: return Colors.blueGrey;
+      case 'hospital':
+        return Colors.red.shade600;
+      case 'police':
+        return Colors.blue.shade700;
+      case 'fire station':
+        return Colors.orange.shade800;
+      case 'ambulance':
+        return Colors.green.shade600;
+      case 'pharmacy':
+        return Colors.teal.shade600;
+      default:
+        return Colors.blueGrey;
     }
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final serviceAsync = ref.watch(serviceByIdProvider(id));
+    final lang = ref.watch(languageProvider);
+    final strings = ref.watch(stringsProvider);
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
       appBar: AppBar(
-        title: const Text('Service Details', 
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+        title: Text(
+          strings.serviceDetails,
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+        ),
         centerTitle: true,
         backgroundColor: Colors.transparent,
       ),
       body: serviceAsync.when(
-        loading: () => const Center(
+        loading: () => Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              CircularProgressIndicator(),
-              SizedBox(height: 16),
-              Text('Loading service details...', style: TextStyle(color: Colors.grey)),
+              const CircularProgressIndicator(),
+              const SizedBox(height: 16),
+              Text(
+                strings.loadingServiceDetails,
+                style: const TextStyle(color: Colors.grey),
+              ),
             ],
           ),
         ),
@@ -55,34 +79,60 @@ class DetailScreen extends ConsumerWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.error_outline_rounded, size: 64, color: Colors.red.shade200),
+                Icon(
+                  Icons.error_outline_rounded,
+                  size: 64,
+                  color: Colors.red.shade200,
+                ),
                 const SizedBox(height: 16),
-                const Text('Failed to load details', 
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                Text(
+                  strings.failedToLoadDetails,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
                 const SizedBox(height: 8),
-                Text(error.toString(), textAlign: TextAlign.center, 
-                  style: const TextStyle(color: Colors.grey)),
+                Text(
+                  error.toString(),
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: Colors.grey),
+                ),
               ],
             ),
           ),
         ),
         data: (service) {
           if (service == null) {
-            return const Center(
+            return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.search_off_rounded, size: 64, color: Colors.grey),
-                  SizedBox(height: 16),
-                  Text('Service not found', 
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.grey)),
+                  const Icon(
+                    Icons.search_off_rounded,
+                    size: 64,
+                    color: Colors.grey,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    strings.serviceNotFound,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey,
+                    ),
+                  ),
                 ],
               ),
             );
           }
 
-          final color = _getColor(service.type);
-          final icon = _getIcon(service.type);
+          final color = _getColor(service.typeEn);
+          final icon = _getIcon(service.typeEn);
+          final serviceName = service.localizedName(lang);
+          final serviceType = service.localizedType(lang);
+          final serviceAddress = service.localizedAddress(lang);
+          final serviceDescription = service.localizedDescription(lang);
 
           return SingleChildScrollView(
             padding: const EdgeInsets.all(24),
@@ -110,14 +160,14 @@ class DetailScreen extends ConsumerWidget {
                               color: color.withAlpha(30),
                               blurRadius: 20,
                               offset: const Offset(0, 10),
-                            )
+                            ),
                           ],
                         ),
                         child: Icon(icon, color: color, size: 48),
                       ),
                       const SizedBox(height: 24),
                       Text(
-                        service.name,
+                        serviceName,
                         textAlign: TextAlign.center,
                         style: const TextStyle(
                           fontSize: 24,
@@ -130,13 +180,16 @@ class DetailScreen extends ConsumerWidget {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
                             decoration: BoxDecoration(
                               color: color.withAlpha(30),
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: Text(
-                              service.type.toUpperCase(),
+                              serviceType.toUpperCase(),
                               style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.bold,
@@ -147,7 +200,11 @@ class DetailScreen extends ConsumerWidget {
                           const SizedBox(width: 12),
                           Row(
                             children: [
-                              const Icon(Icons.star_rounded, color: Colors.amber, size: 20),
+                              const Icon(
+                                Icons.star_rounded,
+                                color: Colors.amber,
+                                size: 20,
+                              ),
                               const SizedBox(width: 4),
                               Text(
                                 service.rating.toString(),
@@ -171,19 +228,19 @@ class DetailScreen extends ConsumerWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     QuickActionButton(
-                      label: 'Call',
+                      label: strings.call,
                       icon: Icons.phone_rounded,
                       color: Colors.green.shade600,
                       onTap: () {},
                     ),
                     QuickActionButton(
-                      label: 'Directions',
+                      label: strings.directions,
                       icon: Icons.map_rounded,
                       color: Colors.blue.shade600,
                       onTap: () {},
                     ),
                     QuickActionButton(
-                      label: 'Favorite',
+                      label: strings.favorite,
                       icon: Icons.favorite_rounded,
                       color: Colors.pink.shade600,
                       onTap: () {},
@@ -194,9 +251,12 @@ class DetailScreen extends ConsumerWidget {
                 const SizedBox(height: 32),
 
                 // Information Section
-                const Text(
-                  'Information',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                Text(
+                  strings.information,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 const SizedBox(height: 16),
                 Container(
@@ -209,22 +269,45 @@ class DetailScreen extends ConsumerWidget {
                         color: Colors.black.withAlpha(5),
                         blurRadius: 15,
                         offset: const Offset(0, 5),
-                      )
+                      ),
                     ],
                   ),
                   child: Column(
                     children: [
-                      _buildInfoRow(Icons.phone_outlined, 'Phone Number', service.phone),
+                      _buildInfoRow(
+                        Icons.phone_outlined,
+                        strings.phoneNumber,
+                        service.phone,
+                      ),
                       const Padding(
                         padding: EdgeInsets.symmetric(vertical: 16),
                         child: Divider(height: 1),
                       ),
-                      _buildInfoRow(Icons.location_on_outlined, 'Address', service.address),
+                      _buildInfoRow(
+                        Icons.location_on_outlined,
+                        strings.address,
+                        serviceAddress,
+                      ),
                       const Padding(
                         padding: EdgeInsets.symmetric(vertical: 16),
                         child: Divider(height: 1),
                       ),
-                      _buildInfoRow(Icons.category_outlined, 'Service Type', service.type),
+                      _buildInfoRow(
+                        Icons.category_outlined,
+                        strings.serviceType,
+                        serviceType,
+                      ),
+                      if (serviceDescription.trim().isNotEmpty) ...[
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 16),
+                          child: Divider(height: 1),
+                        ),
+                        _buildInfoRow(
+                          Icons.description_outlined,
+                          strings.description,
+                          serviceDescription,
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -274,4 +357,3 @@ class DetailScreen extends ConsumerWidget {
     );
   }
 }
-
