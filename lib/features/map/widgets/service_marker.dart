@@ -22,6 +22,8 @@ class ServiceMarker extends StatelessWidget {
         return const Color(0xFFE65100);
       case 'ambulance':
         return const Color(0xFF2E7D32);
+      case 'pharmacy':
+        return const Color(0xFF00897B);
       default:
         return const Color(0xFF5C6BC0);
     }
@@ -37,6 +39,8 @@ class ServiceMarker extends StatelessWidget {
         return Icons.fire_truck_rounded;
       case 'ambulance':
         return Icons.emergency_rounded;
+      case 'pharmacy':
+        return Icons.local_pharmacy_rounded;
       default:
         return Icons.place_rounded;
     }
@@ -58,10 +62,7 @@ class ServiceMarker extends StatelessWidget {
         decoration: BoxDecoration(
           color: isSelected ? color : Colors.white,
           shape: BoxShape.circle,
-          border: Border.all(
-            color: color,
-            width: isSelected ? 3 : 2,
-          ),
+          border: Border.all(color: color, width: isSelected ? 3 : 2),
           boxShadow: [
             BoxShadow(
               color: color.withAlpha(isSelected ? 100 : 50),

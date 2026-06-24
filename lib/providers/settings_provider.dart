@@ -42,7 +42,7 @@ class SettingsNotifier extends AsyncNotifier<AppSettings> {
     return AppSettings(
       themeMode:
           ThemeMode.values[prefs.getInt(_themeKey) ?? ThemeMode.system.index],
-      language: prefs.getString(_langKey) ?? 'en',
+      language: _normalizeLanguage(prefs.getString(_langKey) ?? 'en'),
       bloodGroup: prefs.getString(_bloodGroupKey),
       allergies: prefs.getString(_allergiesKey),
     );
@@ -55,9 +55,10 @@ class SettingsNotifier extends AsyncNotifier<AppSettings> {
   }
 
   Future<void> setLanguage(String lang) async {
+    final normalizedLang = _normalizeLanguage(lang);
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_langKey, lang);
-    state = AsyncData(state.requireValue.copyWith(language: lang));
+    await prefs.setString(_langKey, normalizedLang);
+    state = AsyncData(state.requireValue.copyWith(language: normalizedLang));
   }
 
   Future<void> saveMedicalInfo({String? bloodGroup, String? allergies}) async {
@@ -65,13 +66,13 @@ class SettingsNotifier extends AsyncNotifier<AppSettings> {
     if (bloodGroup != null) await prefs.setString(_bloodGroupKey, bloodGroup);
     if (allergies != null) await prefs.setString(_allergiesKey, allergies);
     state = AsyncData(
-      state.requireValue.copyWith(
-        bloodGroup: bloodGroup,
-        allergies: allergies,
-      ),
+      state.requireValue.copyWith(bloodGroup: bloodGroup, allergies: allergies),
     );
   }
 }
 
-final settingsProvider =
-    AsyncNotifierProvider<SettingsNotifier, AppSettings>(SettingsNotifier.new);
+String _normalizeLanguage(String lang) => lang == 'kh' ? 'km' : lang;
+
+final settingsProvider = AsyncNotifierProvider<SettingsNotifier, AppSettings>(
+  SettingsNotifier.new,
+);

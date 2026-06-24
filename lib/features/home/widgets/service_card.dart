@@ -1,39 +1,53 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../providers/language_provider.dart';
 import 'package:go_router/go_router.dart';
 import '../../../models/emergency_service.dart';
 
-class ServiceCard extends StatelessWidget {
+class ServiceCard extends ConsumerWidget {
   final EmergencyService service;
   const ServiceCard({super.key, required this.service});
 
   IconData get _icon {
-    switch (service.type.toLowerCase()) {
+    switch (service.typeEn.toLowerCase()) {
       case 'hospital':
         return Icons.local_hospital_rounded;
       case 'police':
         return Icons.local_police_rounded;
-      case 'fire':
+      case 'fire station':
         return Icons.fire_truck_rounded;
+      case 'ambulance':
+        return Icons.emergency_rounded;
+      case 'pharmacy':
+        return Icons.local_pharmacy_rounded;
       default:
         return Icons.location_on_rounded;
     }
   }
 
   Color get _color {
-    switch (service.type.toLowerCase()) {
+    switch (service.typeEn.toLowerCase()) {
       case 'hospital':
         return Colors.red.shade600;
       case 'police':
         return Colors.blue.shade700;
-      case 'fire':
+      case 'fire station':
         return Colors.orange.shade800;
+      case 'ambulance':
+        return Colors.green.shade600;
+      case 'pharmacy':
+        return Colors.teal.shade600;
       default:
         return Colors.grey.shade700;
     }
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final lang = ref.watch(languageProvider);
+
+    final serviceName = service.localizedName(lang);
+    final serviceType = service.localizedType(lang);
     final theme = Theme.of(context);
     return Container(
       decoration: BoxDecoration(
@@ -43,7 +57,8 @@ class ServiceCard extends StatelessWidget {
         boxShadow: [
           BoxShadow(
             color: Colors.black.withAlpha(
-                theme.brightness == Brightness.dark ? 30 : 10),
+              theme.brightness == Brightness.dark ? 30 : 10,
+            ),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -72,7 +87,7 @@ class ServiceCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        service.name,
+                        serviceName,
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -82,9 +97,11 @@ class ServiceCard extends StatelessWidget {
                       const SizedBox(height: 4),
                       Row(
                         children: [
-                          Icon(Icons.phone_rounded,
-                              size: 14,
-                              color: theme.colorScheme.onSurfaceVariant),
+                          Icon(
+                            Icons.phone_rounded,
+                            size: 14,
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
                           const SizedBox(width: 4),
                           Text(
                             service.phone,
@@ -98,13 +115,15 @@ class ServiceCard extends StatelessWidget {
                       const SizedBox(height: 8),
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 4),
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: _color.withAlpha(15),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
-                          service.type.toUpperCase(),
+                          serviceType,
                           style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w800,

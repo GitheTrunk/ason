@@ -7,7 +7,7 @@ import 'emergency_provider.dart';
 
 class MapFilterState {
   const MapFilterState({
-    this.selectedType = 'All',
+    this.selectedType = MapServiceType.all,
     this.selectedServiceId,
   });
 
@@ -21,8 +21,9 @@ class MapFilterState {
   }) {
     return MapFilterState(
       selectedType: selectedType ?? this.selectedType,
-      selectedServiceId:
-          clearSelected ? null : selectedServiceId ?? this.selectedServiceId,
+      selectedServiceId: clearSelected
+          ? null
+          : selectedServiceId ?? this.selectedServiceId,
     );
   }
 }
@@ -46,8 +47,9 @@ class MapFilterNotifier extends Notifier<MapFilterState> {
   }
 }
 
-final mapFilterProvider =
-    NotifierProvider<MapFilterNotifier, MapFilterState>(MapFilterNotifier.new);
+final mapFilterProvider = NotifierProvider<MapFilterNotifier, MapFilterState>(
+  MapFilterNotifier.new,
+);
 
 // ─── Derived providers ───────────────────────────────────────────────────────
 
@@ -55,20 +57,19 @@ final mapFilterProvider =
 final allServicesProvider = servicesProvider;
 
 /// Services filtered by the active map filter type.
-final filteredServicesProvider = Provider<AsyncValue<List<EmergencyService>>>(
-  (ref) {
-    final allAsync = ref.watch(allServicesProvider);
-    final filter = ref.watch(mapFilterProvider);
+final filteredServicesProvider = Provider<AsyncValue<List<EmergencyService>>>((
+  ref,
+) {
+  final allAsync = ref.watch(allServicesProvider);
+  final filter = ref.watch(mapFilterProvider);
 
-    return allAsync.whenData((services) {
-      if (filter.selectedType == 'All') return services;
-      return services
-          .where((s) =>
-              s.type.toLowerCase() == filter.selectedType.toLowerCase())
-          .toList();
-    });
-  },
-);
+  return allAsync.whenData((services) {
+    if (filter.selectedType == MapServiceType.all) return services;
+    return services
+        .where((s) => s.typeEn.toLowerCase() == filter.selectedType)
+        .toList();
+  });
+});
 
 /// The currently selected/tapped service.
 final selectedServiceProvider = Provider<EmergencyService?>((ref) {
@@ -79,10 +80,18 @@ final selectedServiceProvider = Provider<EmergencyService?>((ref) {
 
   return allAsync.whenData((services) {
     try {
-      return services
-          .firstWhere((s) => s.id == filter.selectedServiceId);
+      return services.firstWhere((s) => s.id == filter.selectedServiceId);
     } catch (_) {
       return null;
     }
   }).value;
 });
+
+abstract final class MapServiceType {
+  static const all = 'all';
+  static const hospital = 'hospital';
+  static const police = 'police';
+  static const fireStation = 'fire station';
+  static const ambulance = 'ambulance';
+  static const pharmacy = 'pharmacy';
+}
