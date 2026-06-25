@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/auth/login_screen.dart';
+import '../../features/auth/register_screen.dart';
+import '../../features/auth/verify_otp_screen.dart';
 import '../../features/booking/booking_screen.dart';
 import '../../features/chat/chat_screen.dart';
 import '../../features/contacts/contacts_screen.dart';
@@ -16,15 +19,35 @@ import '../../features/nearby/nearby_screen.dart';
 import '../../features/promotions/promotions_screen.dart';
 import '../../features/reviews/reviews_screen.dart';
 import '../../features/settings/settings_screen.dart';
+import '../../features/settings/edit_profile_screen.dart';
+import '../../providers/auth_provider.dart';
+import '../../providers/repository_providers.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 final GlobalKey<NavigatorState> _shellNavigatorKey =
     GlobalKey<NavigatorState>();
 
 final appRouterProvider = Provider<GoRouter>((ref) {
+  final authNotifier = ValueNotifier<bool>(false);
+
+  ref.listen(authStateProvider, (_, __) {
+    authNotifier.value = !authNotifier.value;
+  });
+
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
     initialLocation: '/home',
+    refreshListenable: authNotifier,
+    redirect: (context, state) {
+      final user = ref.read(authRepositoryProvider).currentUser;
+      final isLoggedIn = user != null;
+      final path = state.uri.path;
+      final isAuthRoute = path == '/login' || path == '/register' || path == '/verify-otp';
+
+      if (!isLoggedIn && !isAuthRoute) return '/login';
+      if (isLoggedIn && isAuthRoute) return '/home';
+      return null;
+    },
     routes: [
       ShellRoute(
         navigatorKey: _shellNavigatorKey,
@@ -55,6 +78,27 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         ],
       ),
       GoRoute(path: '/', redirect: (_, state) => '/home'),
+      GoRoute(
+        parentNavigatorKey: _rootNavigatorKey,
+        path: '/login',
+        name: 'login',
+        builder: (context, state) => const LoginScreen(),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootNavigatorKey,
+        path: '/register',
+        name: 'register',
+        builder: (context, state) => const RegisterScreen(),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootNavigatorKey,
+        path: '/verify-otp',
+        name: 'verify-otp',
+        builder: (context, state) {
+          final email = state.extra as String? ?? '';
+          return VerifyOtpScreen(email: email);
+        },
+      ),
       GoRoute(
         parentNavigatorKey: _rootNavigatorKey,
         path: '/nearby',
@@ -114,6 +158,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/settings',
         name: 'settings',
         builder: (context, state) => const SettingsScreen(),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootNavigatorKey,
+        path: '/edit-profile',
+        name: 'edit-profile',
+        builder: (context, state) => const EditProfileScreen(),
       ),
     ],
   );
