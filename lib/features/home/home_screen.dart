@@ -4,16 +4,57 @@ import 'package:ason/features/home/widgets/sos_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../models/emergency_service.dart';
 import '../../providers/language_provider.dart';
 import '../../providers/emergency_provider.dart';
 
-class HomeScreen extends ConsumerWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends ConsumerState<HomeScreen> {
+  final _searchController = TextEditingController();
+  String _searchQuery = '';
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  List<EmergencyService> _filterServices(
+    List<EmergencyService> services,
+    String lang,
+  ) {
+    final query = _searchQuery.trim().toLowerCase();
+    if (query.isEmpty) return services;
+
+    return services.where((service) {
+      final values = [
+        service.localizedName(lang),
+        service.localizedType(lang),
+        service.localizedAddress(lang),
+        service.phone,
+        service.nameEn,
+        service.nameKm,
+        service.typeEn,
+        service.typeKm,
+        service.addressEn,
+        service.addressKm,
+      ];
+
+      return values.any((value) => value.toLowerCase().contains(query));
+    }).toList();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final servicesAsync = ref.watch(servicesProvider);
     final strings = ref.watch(stringsProvider);
+    final lang = ref.watch(languageProvider);
 
     final theme = Theme.of(context);
     return Scaffold(
@@ -78,7 +119,14 @@ class HomeScreen extends ConsumerWidget {
                     ],
                   ),
                   child: TextField(
+                    controller: _searchController,
                     style: TextStyle(color: theme.colorScheme.onSurface),
+                    textInputAction: TextInputAction.search,
+                    onChanged: (value) {
+                      setState(() {
+                        _searchQuery = value;
+                      });
+                    },
                     decoration: InputDecoration(
                       hintText: strings.searchEmergency,
                       hintStyle: TextStyle(
@@ -89,6 +137,18 @@ class HomeScreen extends ConsumerWidget {
                         Icons.search_rounded,
                         color: theme.colorScheme.onSurfaceVariant,
                       ),
+                      suffixIcon: _searchQuery.isEmpty
+                          ? null
+                          : IconButton(
+                              icon: const Icon(Icons.close_rounded),
+                              color: theme.colorScheme.onSurfaceVariant,
+                              onPressed: () {
+                                _searchController.clear();
+                                setState(() {
+                                  _searchQuery = '';
+                                });
+                              },
+                            ),
                       border: InputBorder.none,
                       contentPadding: const EdgeInsets.symmetric(vertical: 15),
                     ),
@@ -230,7 +290,9 @@ class HomeScreen extends ConsumerWidget {
                 ),
               ),
               data: (services) {
-                if (services.isEmpty) {
+                final filteredServices = _filterServices(services, lang);
+
+                if (filteredServices.isEmpty) {
                   return SliverFillRemaining(
                     child: Center(
                       child: Column(
@@ -262,9 +324,9 @@ class HomeScreen extends ConsumerWidget {
                     delegate: SliverChildBuilderDelegate((context, index) {
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 16),
-                        child: ServiceCard(service: services[index]),
+                        child: ServiceCard(service: filteredServices[index]),
                       );
-                    }, childCount: services.length),
+                    }, childCount: filteredServices.length),
                   ),
                 );
               },
