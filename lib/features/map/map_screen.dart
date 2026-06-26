@@ -24,6 +24,7 @@ class _MapScreenState extends ConsumerState<MapScreen>
   // Default center: Phnom Penh, Cambodia
   static const _defaultCenter = LatLng(11.5564, 104.9282);
   static const _defaultZoom = 13.0;
+  static const _bottomNavTopClearance = 96.0;
 
   @override
   void initState() {
@@ -270,7 +271,7 @@ class _MapScreenState extends ConsumerState<MapScreen>
           // ── Re-center FAB ──────────────────────────────────────────────────
           Positioned(
             right: 16,
-            bottom: selectedService != null ? 240 : 100,
+            bottom: selectedService != null ? 336 : 100,
             child: FloatingActionButton.small(
               heroTag: 'recenter',
               onPressed: () => _animateTo(_defaultCenter, zoom: _defaultZoom),
@@ -284,35 +285,44 @@ class _MapScreenState extends ConsumerState<MapScreen>
           ),
 
           // ── Service Detail Sheet ───────────────────────────────────────────
-          if (selectedService != null)
-            Positioned(
-              bottom: 16,
-              left: 0,
-              right: 0,
-              child: AnimatedSlide(
-                offset: Offset.zero,
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeOutCubic,
-                child: AnimatedOpacity(
-                  opacity: 1.0,
-                  duration: const Duration(milliseconds: 250),
-                  child: ServiceDetailSheet(
-                    service: selectedService,
-                    onClose: () =>
-                        ref.read(mapFilterProvider.notifier).clearSelection(),
-                    onNavigate: () => _animateTo(
-                      LatLng(
-                        selectedService.latitude,
-                        selectedService.longitude,
+          Positioned(
+            bottom: _bottomNavTopClearance,
+            left: 0,
+            right: 0,
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              switchInCurve: Curves.easeOutCubic,
+              switchOutCurve: Curves.easeInCubic,
+              transitionBuilder: (child, animation) {
+                final slideAnimation = Tween<Offset>(
+                  begin: const Offset(0, 1),
+                  end: Offset.zero,
+                ).animate(animation);
+
+                return SlideTransition(
+                  position: slideAnimation,
+                  child: FadeTransition(opacity: animation, child: child),
+                );
+              },
+              child: selectedService == null
+                  ? const SizedBox.shrink(key: ValueKey('empty-service-sheet'))
+                  : ServiceDetailSheet(
+                      key: ValueKey(selectedService.id),
+                      service: selectedService,
+                      onClose: () =>
+                          ref.read(mapFilterProvider.notifier).clearSelection(),
+                      onNavigate: () => _animateTo(
+                        LatLng(
+                          selectedService.latitude,
+                          selectedService.longitude,
+                        ),
+                        zoom: 17,
                       ),
-                      zoom: 17,
+                      onViewDetails: () =>
+                          context.push('/detail/${selectedService.id}'),
                     ),
-                    onViewDetails: () =>
-                        context.push('/detail/${selectedService.id}'),
-                  ),
-                ),
-              ),
             ),
+          ),
         ],
       ),
     );
