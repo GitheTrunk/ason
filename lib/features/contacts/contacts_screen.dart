@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../models/personal_contact.dart';
 import '../../providers/contacts_provider.dart';
@@ -16,8 +17,10 @@ class ContactsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(s.contactsTitle,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+        title: Text(
+          s.contactsTitle,
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+        ),
         centerTitle: true,
       ),
       floatingActionButton: Padding(
@@ -37,19 +40,26 @@ class ContactsScreen extends ConsumerWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.error_outline_rounded,
-                    size: 64, color: Colors.red.shade300),
+                Icon(
+                  Icons.error_outline_rounded,
+                  size: 64,
+                  color: Colors.red.shade300,
+                ),
                 const SizedBox(height: 16),
-                Text(s.contactsFailedLoad,
-                    style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: theme.colorScheme.onSurface)),
+                Text(
+                  s.contactsFailedLoad,
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: theme.colorScheme.onSurface,
+                  ),
+                ),
                 const SizedBox(height: 8),
-                Text(e.toString(),
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                        color: theme.colorScheme.onSurfaceVariant)),
+                Text(
+                  e.toString(),
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
+                ),
               ],
             ),
           ),
@@ -60,21 +70,29 @@ class ContactsScreen extends ConsumerWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.people_outline_rounded,
-                      size: 72,
-                      color: theme.colorScheme.outlineVariant),
+                  Icon(
+                    Icons.people_outline_rounded,
+                    size: 72,
+                    color: theme.colorScheme.outlineVariant,
+                  ),
                   const SizedBox(height: 16),
-                  Text(s.contactsEmpty,
-                      style: TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w600,
-                          color: theme.colorScheme.onSurfaceVariant)),
+                  Text(
+                    s.contactsEmpty,
+                    style: TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w600,
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
                   const SizedBox(height: 8),
-                  Text(s.contactsEmptySub,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                          fontSize: 14,
-                          color: theme.colorScheme.onSurfaceVariant)),
+                  Text(
+                    s.contactsEmptySub,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
                 ],
               ),
             );
@@ -97,8 +115,11 @@ class ContactsScreen extends ConsumerWidget {
     );
   }
 
-  void _showContactForm(BuildContext context, WidgetRef ref,
-      {PersonalContact? existing}) {
+  void _showContactForm(
+    BuildContext context,
+    WidgetRef ref, {
+    PersonalContact? existing,
+  }) {
     showDialog(
       context: context,
       builder: (_) => _ContactFormSheet(ref: ref, existing: existing),
@@ -121,6 +142,28 @@ class _ContactCard extends StatelessWidget {
   final dynamic s;
   final VoidCallback onEdit;
 
+  Future<void> _callContact(BuildContext context) async {
+    final uri = Uri(scheme: 'tel', path: contact.phone);
+
+    try {
+      final launched = await launchUrl(
+        uri,
+        mode: LaunchMode.externalApplication,
+      );
+      if (!launched && context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Unable to open phone dialer.')),
+        );
+      }
+    } catch (_) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Unable to open phone dialer.')),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Dismissible(
@@ -141,121 +184,151 @@ class _ContactCard extends StatelessWidget {
           builder: (ctx) => AlertDialog(
             title: Text(s.contactsRemoveTitle),
             content: Text(
-                '${s.contactsRemoveMsg.replaceAll('?', '')} ${contact.name}?'),
+              '${s.contactsRemoveMsg.replaceAll('?', '')} ${contact.name}?',
+            ),
             actions: [
               TextButton(
-                  onPressed: () => Navigator.pop(ctx, false),
-                  child: Text(s.cancel)),
+                onPressed: () => Navigator.pop(ctx, false),
+                child: Text(s.cancel),
+              ),
               TextButton(
-                  onPressed: () => Navigator.pop(ctx, true),
-                  child: Text(s.remove,
-                      style: TextStyle(color: Colors.red.shade400))),
+                onPressed: () => Navigator.pop(ctx, true),
+                child: Text(
+                  s.remove,
+                  style: TextStyle(color: Colors.red.shade400),
+                ),
+              ),
             ],
           ),
         );
       },
       onDismissed: (_) =>
           ref.read(contactsNotifierProvider.notifier).delete(contact.id),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: theme.colorScheme.surface,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: theme.dividerColor),
-        ),
-        child: Row(
-          children: [
-            CircleAvatar(
-              radius: 26,
-              backgroundColor: theme.colorScheme.primaryContainer,
-              child: Text(
-                contact.name.isNotEmpty
-                    ? contact.name[0].toUpperCase()
-                    : '?',
-                style: TextStyle(
+      child: InkWell(
+        onTap: () => _callContact(context),
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surface,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: theme.dividerColor),
+          ),
+          child: Row(
+            children: [
+              CircleAvatar(
+                radius: 26,
+                backgroundColor: theme.colorScheme.primaryContainer,
+                child: Text(
+                  contact.name.isNotEmpty ? contact.name[0].toUpperCase() : '?',
+                  style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: theme.colorScheme.primary),
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(contact.name,
-                      style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: theme.colorScheme.onSurface)),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      Icon(Icons.phone_outlined,
-                          size: 14,
-                          color: theme.colorScheme.onSurfaceVariant),
-                      const SizedBox(width: 4),
-                      Text(contact.phone,
-                          style: TextStyle(
-                              fontSize: 14,
-                              color: theme.colorScheme.onSurfaceVariant)),
-                    ],
+                    color: theme.colorScheme.primary,
                   ),
-                  if (contact.relationship != null) ...[
-                    const SizedBox(height: 6),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.primaryContainer,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        contact.relationship!,
-                        style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            color: theme.colorScheme.primary),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      contact.name,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: theme.colorScheme.onSurface,
                       ),
                     ),
-                  ],
-                ],
-              ),
-            ),
-            IconButton(
-              icon: Icon(Icons.edit_outlined,
-                  color: theme.colorScheme.onSurfaceVariant, size: 20),
-              onPressed: onEdit,
-            ),
-            IconButton(
-              icon: Icon(Icons.delete_outline_rounded,
-                  color: Colors.red.shade400, size: 20),
-              onPressed: () async {
-                final confirmed = await showDialog<bool>(
-                  context: context,
-                  builder: (ctx) => AlertDialog(
-                    title: Text(s.contactsRemoveTitle),
-                    content: Text(
-                        '${s.contactsRemoveMsg.replaceAll('?', '')} ${contact.name}?'),
-                    actions: [
-                      TextButton(
-                          onPressed: () => Navigator.pop(ctx, false),
-                          child: Text(s.cancel)),
-                      TextButton(
-                          onPressed: () => Navigator.pop(ctx, true),
-                          child: Text(s.remove,
-                              style: TextStyle(color: Colors.red.shade400))),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.phone_outlined,
+                          size: 14,
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          contact.phone,
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (contact.relationship != null) ...[
+                      const SizedBox(height: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 3,
+                        ),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.primaryContainer,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          contact.relationship!,
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: theme.colorScheme.primary,
+                          ),
+                        ),
+                      ),
                     ],
-                  ),
-                );
-                if (confirmed == true) {
-                  ref
-                      .read(contactsNotifierProvider.notifier)
-                      .delete(contact.id);
-                }
-              },
-            ),
-          ],
+                  ],
+                ),
+              ),
+              IconButton(
+                icon: Icon(
+                  Icons.edit_outlined,
+                  color: theme.colorScheme.onSurfaceVariant,
+                  size: 20,
+                ),
+                onPressed: onEdit,
+              ),
+              IconButton(
+                icon: Icon(
+                  Icons.delete_outline_rounded,
+                  color: Colors.red.shade400,
+                  size: 20,
+                ),
+                onPressed: () async {
+                  final confirmed = await showDialog<bool>(
+                    context: context,
+                    builder: (ctx) => AlertDialog(
+                      title: Text(s.contactsRemoveTitle),
+                      content: Text(
+                        '${s.contactsRemoveMsg.replaceAll('?', '')} ${contact.name}?',
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(ctx, false),
+                          child: Text(s.cancel),
+                        ),
+                        TextButton(
+                          onPressed: () => Navigator.pop(ctx, true),
+                          child: Text(
+                            s.remove,
+                            style: TextStyle(color: Colors.red.shade400),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                  if (confirmed == true) {
+                    ref
+                        .read(contactsNotifierProvider.notifier)
+                        .delete(contact.id);
+                  }
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -284,12 +357,13 @@ class _ContactFormSheetState extends ConsumerState<_ContactFormSheet> {
   @override
   void initState() {
     super.initState();
-    _nameController =
-        TextEditingController(text: widget.existing?.name ?? '');
-    _phoneController =
-        TextEditingController(text: widget.existing?.phone ?? '');
-    _relationshipController =
-        TextEditingController(text: widget.existing?.relationship ?? '');
+    _nameController = TextEditingController(text: widget.existing?.name ?? '');
+    _phoneController = TextEditingController(
+      text: widget.existing?.phone ?? '',
+    );
+    _relationshipController = TextEditingController(
+      text: widget.existing?.relationship ?? '',
+    );
   }
 
   @override
@@ -309,25 +383,30 @@ class _ContactFormSheetState extends ConsumerState<_ContactFormSheet> {
     try {
       final notifier = widget.ref.read(contactsNotifierProvider.notifier);
       if (_isEditing) {
-        await notifier.edit(widget.existing!.copyWith(
-          name: _nameController.text.trim(),
-          phone: _phoneController.text.trim(),
-          relationship: relationship,
-        ));
+        await notifier.edit(
+          widget.existing!.copyWith(
+            name: _nameController.text.trim(),
+            phone: _phoneController.text.trim(),
+            relationship: relationship,
+          ),
+        );
       } else {
-        await notifier.add(PersonalContact(
-          id: '',
-          userId: '',
-          name: _nameController.text.trim(),
-          phone: _phoneController.text.trim(),
-          relationship: relationship,
-        ));
+        await notifier.add(
+          PersonalContact(
+            id: '',
+            userId: '',
+            name: _nameController.text.trim(),
+            phone: _phoneController.text.trim(),
+            relationship: relationship,
+          ),
+        );
       }
       if (mounted) Navigator.pop(context);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error: $e')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -344,7 +423,8 @@ class _ContactFormSheetState extends ConsumerState<_ContactFormSheet> {
       insetPadding: const EdgeInsets.symmetric(horizontal: 24),
       child: SingleChildScrollView(
         padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom),
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
         child: Padding(
           padding: const EdgeInsets.all(24),
           child: Form(
@@ -359,33 +439,47 @@ class _ContactFormSheetState extends ConsumerState<_ContactFormSheet> {
                       child: Text(
                         _isEditing ? s.contactsEdit : s.contactsAddTitle,
                         style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: theme.colorScheme.onSurface),
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: theme.colorScheme.onSurface,
+                        ),
                       ),
                     ),
                     IconButton(
                       onPressed: () => Navigator.pop(context),
-                      icon: Icon(Icons.close_rounded,
-                          color: theme.colorScheme.onSurfaceVariant),
+                      icon: Icon(
+                        Icons.close_rounded,
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
                     ),
                   ],
                 ),
                 const SizedBox(height: 20),
-                _buildField(s.fieldName, Icons.person_outline, _nameController,
-                    required: true, s: s),
+                _buildField(
+                  s.fieldName,
+                  Icons.person_outline,
+                  _nameController,
+                  required: true,
+                  s: s,
+                ),
                 const SizedBox(height: 12),
                 _buildField(
-                    s.fieldPhone, Icons.phone_outlined, _phoneController,
-                    required: true,
-                    keyboardType: TextInputType.phone,
-                    s: s),
+                  s.fieldPhone,
+                  Icons.phone_outlined,
+                  _phoneController,
+                  required: true,
+                  keyboardType: TextInputType.phone,
+                  s: s,
+                ),
                 const SizedBox(height: 12),
-                _buildField(s.fieldRelationship,
-                    Icons.family_restroom_outlined, _relationshipController,
-                    s: s),
+                _buildField(
+                  s.fieldRelationship,
+                  Icons.family_restroom_outlined,
+                  _relationshipController,
+                  s: s,
+                ),
                 const SizedBox(height: 24),
                 SizedBox(
                   width: double.infinity,
@@ -396,7 +490,8 @@ class _ContactFormSheetState extends ConsumerState<_ContactFormSheet> {
                       backgroundColor: Colors.red.shade600,
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16)),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
                       elevation: 0,
                     ),
                     child: _saving
@@ -404,11 +499,17 @@ class _ContactFormSheetState extends ConsumerState<_ContactFormSheet> {
                             width: 22,
                             height: 22,
                             child: CircularProgressIndicator(
-                                strokeWidth: 2, color: Colors.white))
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
                         : Text(
                             _isEditing ? s.saveChanges : s.save,
                             style: const TextStyle(
-                                fontSize: 16, fontWeight: FontWeight.bold)),
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                   ),
                 ),
               ],
@@ -431,10 +532,7 @@ class _ContactFormSheetState extends ConsumerState<_ContactFormSheet> {
       controller: controller,
       keyboardType: keyboardType,
       style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
-      decoration: InputDecoration(
-        labelText: label,
-        prefixIcon: Icon(icon),
-      ),
+      decoration: InputDecoration(labelText: label, prefixIcon: Icon(icon)),
       validator: required
           ? (v) => (v == null || v.trim().isEmpty) ? s.required : null
           : null,
