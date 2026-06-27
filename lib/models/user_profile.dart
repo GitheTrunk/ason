@@ -6,6 +6,8 @@ class UserProfile {
     this.address,
     this.phone,
     this.importantInfo,
+    this.bloodGroup,
+    this.allergies,
     this.avatarUrl,
   });
 
@@ -15,6 +17,8 @@ class UserProfile {
   final String? address;
   final String? phone;
   final String? importantInfo;
+  final String? bloodGroup;
+  final String? allergies;
   final String? avatarUrl;
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
@@ -25,19 +29,23 @@ class UserProfile {
       address: json['address'] as String?,
       phone: json['phone'] as String?,
       importantInfo: json['important_info'] as String?,
+      bloodGroup: json['blood_group'] as String?,
+      allergies: json['allergies'] as String?,
       avatarUrl: json['avatar_url'] as String?,
     );
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'email': email,
-        if (name != null) 'name': name,
-        if (address != null) 'address': address,
-        if (phone != null) 'phone': phone,
-        if (importantInfo != null) 'important_info': importantInfo,
-        if (avatarUrl != null) 'avatar_url': avatarUrl,
-      };
+    'id': id,
+    'email': email,
+    if (name != null) 'name': name,
+    if (address != null) 'address': address,
+    if (phone != null) 'phone': phone,
+    if (importantInfo != null) 'important_info': importantInfo,
+    if (bloodGroup != null) 'blood_group': bloodGroup,
+    if (allergies != null) 'allergies': allergies,
+    if (avatarUrl != null) 'avatar_url': avatarUrl,
+  };
 
   UserProfile copyWith({
     String? id,
@@ -46,6 +54,8 @@ class UserProfile {
     String? address,
     String? phone,
     String? importantInfo,
+    String? bloodGroup,
+    String? allergies,
     String? avatarUrl,
   }) {
     return UserProfile(
@@ -55,6 +65,8 @@ class UserProfile {
       address: address ?? this.address,
       phone: phone ?? this.phone,
       importantInfo: importantInfo ?? this.importantInfo,
+      bloodGroup: bloodGroup ?? this.bloodGroup,
+      allergies: allergies ?? this.allergies,
       avatarUrl: avatarUrl ?? this.avatarUrl,
     );
   }

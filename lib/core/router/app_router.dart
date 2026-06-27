@@ -18,8 +18,10 @@ import '../../features/navigation/main_shell.dart';
 import '../../features/nearby/nearby_screen.dart';
 import '../../features/promotions/promotions_screen.dart';
 import '../../features/reviews/reviews_screen.dart';
+import '../../features/settings/privacy_policy_screen.dart';
 import '../../features/settings/settings_screen.dart';
 import '../../features/settings/edit_profile_screen.dart';
+import '../../features/settings/terms_service_screen.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/repository_providers.dart';
 
@@ -42,7 +44,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       final user = ref.read(authRepositoryProvider).currentUser;
       final isLoggedIn = user != null;
       final path = state.uri.path;
-      final isAuthRoute = path == '/login' || path == '/register' || path == '/verify-otp';
+      final isAuthRoute =
+          path == '/login' || path == '/register' || path == '/verify-otp';
 
       if (!isLoggedIn && !isAuthRoute) return '/login';
       if (isLoggedIn && isAuthRoute) return '/home';
@@ -164,6 +167,18 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/edit-profile',
         name: 'edit-profile',
         builder: (context, state) => const EditProfileScreen(),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootNavigatorKey,
+        path: '/privacy-policy',
+        name: 'privacy-policy',
+        builder: (context, state) => const PrivacyPolicyScreen(),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootNavigatorKey,
+        path: '/terms-of-service',
+        name: 'terms-of-service',
+        builder: (context, state) => const TermsOfServiceScreen(),
       ),
     ],
   );

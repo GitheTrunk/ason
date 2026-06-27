@@ -5,7 +5,6 @@ import '../models/user_profile.dart';
 import 'auth_provider.dart';
 import 'repository_providers.dart';
 
-
 class ProfileNotifier extends AsyncNotifier<UserProfile?> {
   @override
   Future<UserProfile?> build() async {
@@ -19,6 +18,8 @@ class ProfileNotifier extends AsyncNotifier<UserProfile?> {
     String? address,
     String? phone,
     String? importantInfo,
+    String? bloodGroup,
+    String? allergies,
     String? avatarUrl,
   }) async {
     final currentProfile = state.value;
@@ -29,6 +30,8 @@ class ProfileNotifier extends AsyncNotifier<UserProfile?> {
       address: address,
       phone: phone,
       importantInfo: importantInfo,
+      bloodGroup: bloodGroup,
+      allergies: allergies,
       avatarUrl: avatarUrl,
     );
     await ref.read(profileRepositoryProvider).updateProfile(updated);
@@ -38,20 +41,20 @@ class ProfileNotifier extends AsyncNotifier<UserProfile?> {
   Future<void> uploadAvatar(XFile imageFile) async {
     final currentProfile = state.value;
     if (currentProfile == null) return;
-    
+
     final bytes = await imageFile.readAsBytes();
     String extension = 'png';
     if (imageFile.name.contains('.')) {
       extension = imageFile.name.split('.').last.toLowerCase();
     }
-    
-    final newUrl = await ref.read(profileRepositoryProvider)
+
+    final newUrl = await ref
+        .read(profileRepositoryProvider)
         .uploadAvatar(bytes, currentProfile.id, extension);
     await updateProfile(avatarUrl: newUrl);
   }
 }
 
-final profileProvider =
-    AsyncNotifierProvider<ProfileNotifier, UserProfile?>(
+final profileProvider = AsyncNotifierProvider<ProfileNotifier, UserProfile?>(
   ProfileNotifier.new,
 );

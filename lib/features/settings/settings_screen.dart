@@ -81,7 +81,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ? 'ព័ត៌មានវេជ្ជសាស្ត្រ'
                   : 'Medical Info',
             ),
-            _MedicalInfoCard(settings: settings, theme: theme),
+            _MedicalInfoCard(theme: theme),
             const SizedBox(height: 24),
 
             // Notifications
@@ -146,12 +146,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   icon: Icons.people_outline_rounded,
                   iconColor: Colors.orange.shade400,
                   title: _isKh(settings.language)
-                      ? 'គ្រប់គ្រងទំនាក់ទំនង'
-                      : 'Manage Contacts',
+                      ? 'ទំនាក់ទំនងបន្ទាន់'
+                      : 'Emergency Contacts',
                   subtitle: _isKh(settings.language)
                       ? 'បន្ថែម ឬ លុបទំនាក់ទំនងបន្ទាន់'
-                      : 'Add or remove emergency contacts',
-                  onTap: () => context.push('/contacts'),
+                      : 'Add or remove emergency contact',
+                  onTap: () => context.go('/contacts'),
                 ),
               ],
             ),
@@ -177,7 +177,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   title: _isKh(settings.language)
                       ? 'គោលការណ៍ភាពឯកជន'
                       : 'Privacy Policy',
-                  onTap: () {},
+                  onTap: () => context.go('/privacy-policy'),
                 ),
                 Divider(height: 1, indent: 56, color: theme.dividerColor),
                 _NavTile(
@@ -187,7 +187,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   title: _isKh(settings.language)
                       ? 'លក្ខខណ្ឌប្រើប្រាស់'
                       : 'Terms of Service',
-                  onTap: () {},
+                  onTap: () => context.go('/terms-of-service'),
                 ),
               ],
             ),
@@ -380,189 +380,128 @@ class _LangChip extends StatelessWidget {
 
 // ── Medical Info Card ────────────────────────────────────────────────────────
 
-class _MedicalInfoCard extends ConsumerStatefulWidget {
-  const _MedicalInfoCard({required this.settings, required this.theme});
+class _MedicalInfoCard extends ConsumerWidget {
+  const _MedicalInfoCard({required this.theme});
 
-  final AppSettings settings;
   final ThemeData theme;
 
   @override
-  ConsumerState<_MedicalInfoCard> createState() => _MedicalInfoCardState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final profileAsync = ref.watch(profileProvider);
+    final lang =
+        ref.watch(settingsProvider).whenOrNull(data: (s) => s.language) ?? 'en';
 
-class _MedicalInfoCardState extends ConsumerState<_MedicalInfoCard> {
-  static const _bloodGroups = [
-    'A+',
-    'A−',
-    'B+',
-    'B−',
-    'AB+',
-    'AB−',
-    'O+',
-    'O−',
-  ];
-
-  late String? _bloodGroup;
-  late final TextEditingController _allergiesController;
-  bool _saving = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _bloodGroup = widget.settings.bloodGroup;
-    _allergiesController = TextEditingController(
-      text: widget.settings.allergies ?? '',
+    return profileAsync.when(
+      loading: () => Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surface,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: theme.dividerColor),
+        ),
+        child: const Center(child: CircularProgressIndicator()),
+      ),
+      error: (e, _) => Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surface,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: theme.dividerColor),
+        ),
+        child: Text('Error loading medical info: $e'),
+      ),
+      data: (profile) => Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surface,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: theme.dividerColor),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _InfoRow(
+              theme: theme,
+              icon: Icons.bloodtype_outlined,
+              label: _isKh(lang) ? 'ក្រុមឈាម' : 'Blood Group',
+              value: profile?.bloodGroup,
+            ),
+            const SizedBox(height: 14),
+            _InfoRow(
+              theme: theme,
+              icon: Icons.warning_amber_outlined,
+              label: _isKh(lang) ? 'អាឡែស៊ី' : 'Allergies',
+              value: profile?.allergies,
+            ),
+            const SizedBox(height: 18),
+            SizedBox(
+              width: double.infinity,
+              height: 46,
+              child: OutlinedButton.icon(
+                onPressed: () => context.push('/edit-profile'),
+                icon: const Icon(Icons.edit_outlined),
+                label: Text(_isKh(lang) ? 'កែសម្រួល' : 'Edit'),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
+}
 
-  @override
-  void dispose() {
-    _allergiesController.dispose();
-    super.dispose();
-  }
+class _InfoRow extends StatelessWidget {
+  const _InfoRow({
+    required this.theme,
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
 
-  Future<void> _save() async {
-    setState(() => _saving = true);
-    await ref
-        .read(settingsProvider.notifier)
-        .saveMedicalInfo(
-          bloodGroup: _bloodGroup,
-          allergies: _allergiesController.text.trim().isEmpty
-              ? null
-              : _allergiesController.text.trim(),
-        );
-    if (mounted) {
-      setState(() => _saving = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            _isKh(widget.settings.language) ? 'បានរក្សាទុក' : 'Saved',
-          ),
-          behavior: SnackBarBehavior.floating,
-          duration: const Duration(seconds: 2),
-        ),
-      );
-    }
-  }
+  final ThemeData theme;
+  final IconData icon;
+  final String label;
+  final String? value;
 
   @override
   Widget build(BuildContext context) {
-    final theme = widget.theme;
-    final lang = widget.settings.language;
-
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: theme.dividerColor),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Blood Group label
-          Text(
-            _isKh(lang) ? 'ក្រុមឈាម' : 'Blood Group',
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.primaryContainer.withAlpha(120),
+            borderRadius: BorderRadius.circular(10),
           ),
-          const SizedBox(height: 10),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: _bloodGroups.map((group) {
-              final isSelected = _bloodGroup == group;
-              return GestureDetector(
-                onTap: () => setState(() => _bloodGroup = group),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 180),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        ? Colors.red.shade600
-                        : theme.colorScheme.surfaceContainerHighest,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: isSelected
-                          ? Colors.red.shade600
-                          : theme.dividerColor,
-                    ),
-                  ),
-                  child: Text(
-                    group,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: isSelected
-                          ? Colors.white
-                          : theme.colorScheme.onSurfaceVariant,
-                    ),
-                  ),
+          child: Icon(icon, size: 20, color: theme.colorScheme.primary),
+        ),
+        const SizedBox(width: 14),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: theme.colorScheme.onSurfaceVariant,
                 ),
-              );
-            }).toList(),
-          ),
-          const SizedBox(height: 20),
-
-          Text(
-            _isKh(lang) ? 'អាឡែស៊ី' : 'Allergies',
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-          ),
-          const SizedBox(height: 10),
-          TextField(
-            controller: _allergiesController,
-            maxLines: 3,
-            style: TextStyle(color: theme.colorScheme.onSurface),
-            decoration: InputDecoration(
-              hintText: _isKh(lang)
-                  ? 'ឧ. ប៉េនីស៊ីលីន ប្រូហ្វេន...'
-                  : 'e.g. Penicillin, Ibuprofen...',
-            ),
-          ),
-          const SizedBox(height: 16),
-          SizedBox(
-            width: double.infinity,
-            height: 48,
-            child: ElevatedButton(
-              onPressed: _saving ? null : _save,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red.shade600,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                elevation: 0,
               ),
-              child: _saving
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
-                  : Text(
-                      _isKh(lang) ? 'រក្សាទុក' : 'Save',
-                      style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-            ),
+              const SizedBox(height: 4),
+              Text(
+                value?.isNotEmpty == true ? value! : '—',
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: theme.colorScheme.onSurface,
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
@@ -640,8 +579,11 @@ class _ProfileCard extends ConsumerWidget {
                     ? NetworkImage(profile!.avatarUrl!)
                     : null,
                 child: profile?.avatarUrl == null
-                    ? Icon(Icons.person_rounded,
-                        size: 34, color: theme.colorScheme.primary)
+                    ? Icon(
+                        Icons.person_rounded,
+                        size: 34,
+                        color: theme.colorScheme.primary,
+                      )
                     : null,
               ),
               const SizedBox(width: 16),
@@ -668,8 +610,10 @@ class _ProfileCard extends ConsumerWidget {
                   ],
                 ),
               ),
-              Icon(Icons.chevron_right_rounded,
-                  color: theme.colorScheme.onSurfaceVariant),
+              Icon(
+                Icons.chevron_right_rounded,
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
             ],
           ),
         ),

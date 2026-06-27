@@ -34,6 +34,8 @@ class SupabaseProfileRepository implements ProfileRepository {
       'address': profile.address,
       'phone': profile.phone,
       'important_info': profile.importantInfo,
+      'blood_group': profile.bloodGroup,
+      'allergies': profile.allergies,
       'avatar_url': profile.avatarUrl,
     };
 
@@ -48,19 +50,26 @@ class SupabaseProfileRepository implements ProfileRepository {
   }
 
   @override
-  Future<String> uploadAvatar(Uint8List bytes, String userId, String extension) async {
-    final fileName = '$userId-${DateTime.now().millisecondsSinceEpoch}.$extension';
-    
-    await service.client.storage.from('avatars').uploadBinary(
-      fileName,
-      bytes,
-      fileOptions: FileOptions(
-        cacheControl: '3600',
-        upsert: true,
-        contentType: 'image/$extension',
-      ),
-    );
-        
+  Future<String> uploadAvatar(
+    Uint8List bytes,
+    String userId,
+    String extension,
+  ) async {
+    final fileName =
+        '$userId-${DateTime.now().millisecondsSinceEpoch}.$extension';
+
+    await service.client.storage
+        .from('avatars')
+        .uploadBinary(
+          fileName,
+          bytes,
+          fileOptions: FileOptions(
+            cacheControl: '3600',
+            upsert: true,
+            contentType: 'image/$extension',
+          ),
+        );
+
     return service.client.storage.from('avatars').getPublicUrl(fileName);
   }
 }

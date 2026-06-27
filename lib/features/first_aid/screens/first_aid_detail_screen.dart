@@ -9,7 +9,10 @@ class FirstAidDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
+      backgroundColor: theme.colorScheme.surface,
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
@@ -39,13 +42,17 @@ class FirstAidDetailScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildCategoryChip(),
+                  _buildCategoryChip(theme),
 
                   const SizedBox(height: 24),
 
-                  const Text(
+                  Text(
                     'First Aid Steps',
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: theme.colorScheme.onSurface,
+                    ),
                   ),
 
                   const SizedBox(height: 16),
@@ -60,6 +67,7 @@ class FirstAidDetailScreen extends StatelessWidget {
                   else
                     ...guide.steps.asMap().entries.map(
                       (entry) => _buildStepCard(
+                        theme: theme,
                         number: entry.key + 1,
                         text: entry.value,
                       ),
@@ -67,7 +75,7 @@ class FirstAidDetailScreen extends StatelessWidget {
 
                   const SizedBox(height: 30),
 
-                  _buildEmergencySection(),
+                  _buildEmergencySection(theme),
 
                   const SizedBox(height: 40),
                 ],
@@ -86,27 +94,39 @@ class FirstAidDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildCategoryChip() {
+  Widget _buildCategoryChip(ThemeData theme) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.red.shade50,
+        color: theme.colorScheme.errorContainer,
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
         guide.category,
-        style: const TextStyle(color: Colors.red, fontWeight: FontWeight.w600),
+        style: TextStyle(
+          color: theme.colorScheme.onErrorContainer,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
   }
 
-  Widget _buildStepCard({required int number, required String text}) {
+  Widget _buildStepCard({
+    required ThemeData theme,
+    required int number,
+    required String text,
+  }) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          CircleAvatar(radius: 18, child: Text(number.toString())),
+          CircleAvatar(
+            radius: 18,
+            backgroundColor: theme.colorScheme.primaryContainer,
+            foregroundColor: theme.colorScheme.onPrimaryContainer,
+            child: Text(number.toString()),
+          ),
 
           const SizedBox(width: 12),
 
@@ -114,12 +134,16 @@ class FirstAidDetailScreen extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.grey.shade100,
+                color: theme.colorScheme.surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
                 text,
-                style: const TextStyle(fontSize: 15, height: 1.5),
+                style: TextStyle(
+                  fontSize: 15,
+                  height: 1.5,
+                  color: theme.colorScheme.onSurface,
+                ),
               ),
             ),
           ),
@@ -128,29 +152,34 @@ class FirstAidDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildEmergencySection() {
+  Widget _buildEmergencySection(ThemeData theme) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.red.shade50,
+        color: theme.colorScheme.errorContainer,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
         children: [
-          const Icon(Icons.emergency, size: 40, color: Colors.red),
+          Icon(Icons.emergency, size: 40, color: theme.colorScheme.error),
 
           const SizedBox(height: 12),
 
-          const Text(
+          Text(
             'Emergency?',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: theme.colorScheme.onErrorContainer,
+            ),
           ),
 
           const SizedBox(height: 8),
 
-          const Text(
+          Text(
             'If the condition is serious, contact emergency services immediately.',
             textAlign: TextAlign.center,
+            style: TextStyle(color: theme.colorScheme.onErrorContainer),
           ),
 
           const SizedBox(height: 16),

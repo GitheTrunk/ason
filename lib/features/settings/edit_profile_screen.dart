@@ -20,11 +20,24 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   final _addressController = TextEditingController();
   final _phoneController = TextEditingController();
   final _infoController = TextEditingController();
+  final _allergiesController = TextEditingController();
+
+  static const _bloodGroups = [
+    'A+',
+    'A−',
+    'B+',
+    'B−',
+    'AB+',
+    'AB−',
+    'O+',
+    'O−',
+  ];
 
   bool _isEditing = false;
   bool _isSaving = false;
   bool _isUploadingImage = false;
   String? _email;
+  String? _bloodGroup;
   String? _selectedProvince;
   String? _selectedDistrict;
   String? _selectedCommune;
@@ -37,8 +50,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       _nameController.text = profile.name ?? '';
       _phoneController.text = profile.phone ?? '';
       _infoController.text = profile.importantInfo ?? '';
+      _allergiesController.text = profile.allergies ?? '';
+      _bloodGroup = profile.bloodGroup;
       _email = profile.email;
-      
+
       if (profile.address != null && profile.address!.isNotEmpty) {
         final parts = profile.address!.split(', ');
         if (parts.length == 3) {
@@ -46,7 +61,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           _selectedDistrict = parts[1];
           _selectedProvince = parts[2];
         } else if (parts.length == 1) {
-          _selectedProvince = kCambodiaLocations.containsKey(parts[0]) ? parts[0] : null;
+          _selectedProvince = kCambodiaLocations.containsKey(parts[0])
+              ? parts[0]
+              : null;
         }
       }
     }
@@ -58,6 +75,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     _addressController.dispose();
     _phoneController.dispose();
     _infoController.dispose();
+    _allergiesController.dispose();
     super.dispose();
   }
 
@@ -75,15 +93,15 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     try {
       await ref.read(profileProvider.notifier).uploadAvatar(image);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Profile photo updated!')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Profile photo updated!')));
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error uploading photo: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error uploading photo: $e')));
       }
     } finally {
       if (mounted) setState(() => _isUploadingImage = false);
@@ -93,7 +111,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   Future<void> _save() async {
     if (!(_formKey.currentState?.validate() ?? true)) return;
     setState(() => _isSaving = true);
-    
+
     final addressParts = [
       if (_selectedCommune != null) _selectedCommune!,
       if (_selectedDistrict != null) _selectedDistrict!,
@@ -102,11 +120,17 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     final fullAddress = addressParts.isEmpty ? null : addressParts.join(', ');
 
     try {
-      await ref.read(profileProvider.notifier).updateProfile(
+      await ref
+          .read(profileProvider.notifier)
+          .updateProfile(
             name: _nameController.text.trim(),
             address: fullAddress,
             phone: _phoneController.text.trim(),
             importantInfo: _infoController.text.trim(),
+            bloodGroup: _bloodGroup,
+            allergies: _allergiesController.text.trim().isEmpty
+                ? null
+                : _allergiesController.text.trim(),
           );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -116,9 +140,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error updating profile: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error updating profile: $e')));
       }
     } finally {
       if (mounted) setState(() => _isSaving = false);
@@ -155,7 +179,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                       if (passwordController.text.length < 6) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                              content: Text('Password must be at least 6 characters')),
+                            content: Text(
+                              'Password must be at least 6 characters',
+                            ),
+                          ),
                         );
                         return;
                       }
@@ -168,14 +195,15 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                           Navigator.pop(ctx);
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                                content: Text('Password changed successfully!')),
+                              content: Text('Password changed successfully!'),
+                            ),
                           );
                         }
                       } catch (e) {
                         if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Error: $e')),
-                          );
+                          ScaffoldMessenger.of(
+                            context,
+                          ).showSnackBar(SnackBar(content: Text('Error: $e')));
                         }
                       } finally {
                         if (context.mounted) {
@@ -188,7 +216,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                       height: 16,
                       width: 16,
                       child: CircularProgressIndicator(
-                          strokeWidth: 2, color: Colors.white),
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
                     )
                   : const Text('Update'),
             ),
@@ -258,10 +288,12 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                         child: _isUploadingImage
                             ? const CircularProgressIndicator()
                             : profile?.avatarUrl == null
-                                ? Icon(Icons.person_rounded,
-                                    size: 52,
-                                    color: theme.colorScheme.primary)
-                                : null,
+                            ? Icon(
+                                Icons.person_rounded,
+                                size: 52,
+                                color: theme.colorScheme.primary,
+                              )
+                            : null,
                       ),
                       if (_isEditing)
                         Positioned(
@@ -277,8 +309,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                                 color: theme.colorScheme.primary,
                                 shape: BoxShape.circle,
                                 border: Border.all(
-                                    color: theme.colorScheme.surface,
-                                    width: 2),
+                                  color: theme.colorScheme.surface,
+                                  width: 2,
+                                ),
                               ),
                               child: Icon(
                                 Icons.camera_alt,
@@ -347,17 +380,31 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                               children: [
                                 // Province Dropdown
                                 Padding(
-                                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                                  padding: const EdgeInsets.fromLTRB(
+                                    16,
+                                    0,
+                                    16,
+                                    8,
+                                  ),
                                   child: DropdownButtonFormField<String>(
                                     value: _selectedProvince,
                                     isExpanded: true,
                                     decoration: InputDecoration(
                                       labelText: 'Province / City',
-                                      prefixIcon: const Icon(Icons.location_city_outlined),
-                                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                                      prefixIcon: const Icon(
+                                        Icons.location_city_outlined,
+                                      ),
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
                                     ),
                                     items: kCambodiaLocations.keys
-                                        .map((p) => DropdownMenuItem(value: p, child: Text(p)))
+                                        .map(
+                                          (p) => DropdownMenuItem(
+                                            value: p,
+                                            child: Text(p),
+                                          ),
+                                        )
                                         .toList(),
                                     onChanged: (v) {
                                       setState(() {
@@ -370,49 +417,87 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                                 ),
                                 // District Dropdown
                                 Padding(
-                                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                                  padding: const EdgeInsets.fromLTRB(
+                                    16,
+                                    8,
+                                    16,
+                                    8,
+                                  ),
                                   child: DropdownButtonFormField<String>(
                                     value: _selectedDistrict,
                                     isExpanded: true,
                                     decoration: InputDecoration(
                                       labelText: 'District / Khan',
-                                      prefixIcon: const Icon(Icons.map_outlined),
-                                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                                      prefixIcon: const Icon(
+                                        Icons.map_outlined,
+                                      ),
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
                                     ),
                                     items: _selectedProvince == null
                                         ? []
-                                        : (kCambodiaLocations[_selectedProvince]?.keys.toList() ?? [])
-                                            .map((d) => DropdownMenuItem(value: d, child: Text(d)))
-                                            .toList(),
-                                    onChanged: _selectedProvince == null ? null : (v) {
-                                      setState(() {
-                                        _selectedDistrict = v;
-                                        _selectedCommune = null;
-                                      });
-                                    },
+                                        : (kCambodiaLocations[_selectedProvince]
+                                                      ?.keys
+                                                      .toList() ??
+                                                  [])
+                                              .map(
+                                                (d) => DropdownMenuItem(
+                                                  value: d,
+                                                  child: Text(d),
+                                                ),
+                                              )
+                                              .toList(),
+                                    onChanged: _selectedProvince == null
+                                        ? null
+                                        : (v) {
+                                            setState(() {
+                                              _selectedDistrict = v;
+                                              _selectedCommune = null;
+                                            });
+                                          },
                                   ),
                                 ),
                                 // Commune Dropdown
                                 Padding(
-                                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                                  padding: const EdgeInsets.fromLTRB(
+                                    16,
+                                    8,
+                                    16,
+                                    8,
+                                  ),
                                   child: DropdownButtonFormField<String>(
                                     value: _selectedCommune,
                                     isExpanded: true,
                                     decoration: InputDecoration(
                                       labelText: 'Commune / Sangkat',
-                                      prefixIcon: const Icon(Icons.pin_drop_outlined),
-                                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                                      prefixIcon: const Icon(
+                                        Icons.pin_drop_outlined,
+                                      ),
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
                                     ),
-                                    items: _selectedDistrict == null || _selectedProvince == null
+                                    items:
+                                        _selectedDistrict == null ||
+                                            _selectedProvince == null
                                         ? []
-                                        : (kCambodiaLocations[_selectedProvince]?[_selectedDistrict] ?? [])
-                                            .map((c) => DropdownMenuItem(value: c, child: Text(c)))
-                                            .toList(),
-                                    onChanged: _selectedDistrict == null ? null : (v) {
-                                      setState(() {
-                                        _selectedCommune = v;
-                                      });
-                                    },
+                                        : (kCambodiaLocations[_selectedProvince]?[_selectedDistrict] ??
+                                                  [])
+                                              .map(
+                                                (c) => DropdownMenuItem(
+                                                  value: c,
+                                                  child: Text(c),
+                                                ),
+                                              )
+                                              .toList(),
+                                    onChanged: _selectedDistrict == null
+                                        ? null
+                                        : (v) {
+                                            setState(() {
+                                              _selectedCommune = v;
+                                            });
+                                          },
                                   ),
                                 ),
                               ],
@@ -434,6 +519,84 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                       isEditing: _isEditing,
                       maxLines: 3,
                     ),
+                    _divider(theme),
+                    _isEditing
+                        ? Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            child: Column(
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.fromLTRB(
+                                    16,
+                                    0,
+                                    16,
+                                    8,
+                                  ),
+                                  child: DropdownButtonFormField<String>(
+                                    value: _bloodGroup,
+                                    isExpanded: true,
+                                    decoration: InputDecoration(
+                                      labelText: 'Blood Group',
+                                      prefixIcon: const Icon(
+                                        Icons.bloodtype_outlined,
+                                      ),
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                    ),
+                                    items: _bloodGroups
+                                        .map(
+                                          (group) => DropdownMenuItem(
+                                            value: group,
+                                            child: Text(group),
+                                          ),
+                                        )
+                                        .toList(),
+                                    onChanged: (value) =>
+                                        setState(() => _bloodGroup = value),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.fromLTRB(
+                                    16,
+                                    8,
+                                    16,
+                                    8,
+                                  ),
+                                  child: TextFormField(
+                                    controller: _allergiesController,
+                                    maxLines: 3,
+                                    decoration: InputDecoration(
+                                      labelText: 'Allergies',
+                                      prefixIcon: const Icon(
+                                        Icons.warning_amber_outlined,
+                                      ),
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                        : Column(
+                            children: [
+                              _buildReadOnlyRow(
+                                theme: theme,
+                                icon: Icons.bloodtype_outlined,
+                                label: 'Blood Group',
+                                value: profile?.bloodGroup,
+                              ),
+                              _divider(theme),
+                              _buildReadOnlyRow(
+                                theme: theme,
+                                icon: Icons.warning_amber_outlined,
+                                label: 'Allergies',
+                                value: profile?.allergies,
+                              ),
+                            ],
+                          ),
                   ],
                 ),
 
@@ -450,8 +613,11 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                           color: Colors.orange.withAlpha(30),
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        child: Icon(Icons.lock_outline,
-                            color: Colors.orange.shade600, size: 20),
+                        child: Icon(
+                          Icons.lock_outline,
+                          color: Colors.orange.shade600,
+                          size: 20,
+                        ),
                       ),
                       title: const Text('Change Password'),
                       trailing: const Icon(Icons.chevron_right_rounded),
@@ -469,7 +635,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     );
   }
 
-  Widget _buildCard({required ThemeData theme, required List<Widget> children}) {
+  Widget _buildCard({
+    required ThemeData theme,
+    required List<Widget> children,
+  }) {
     return Container(
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
@@ -495,7 +664,11 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   }) {
     if (!isEditing) {
       return _buildReadOnlyRow(
-          theme: theme, icon: icon, label: label, value: value);
+        theme: theme,
+        icon: icon,
+        label: label,
+        value: value,
+      );
     }
 
     return Padding(
@@ -507,9 +680,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         decoration: InputDecoration(
           labelText: label,
           prefixIcon: Icon(icon),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         ),
       ),
     );
