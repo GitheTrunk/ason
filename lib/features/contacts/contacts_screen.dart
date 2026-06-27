@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../models/personal_contact.dart';
 import '../../providers/contacts_provider.dart';
@@ -156,7 +157,10 @@ class _ContactCard extends StatelessWidget {
       },
       onDismissed: (_) =>
           ref.read(contactsNotifierProvider.notifier).delete(contact.id),
-      child: Container(
+      child: InkWell(
+        onTap: () => launchUrl(Uri(scheme: 'tel', path: contact.phone)),
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: theme.colorScheme.surface,
@@ -258,7 +262,8 @@ class _ContactCard extends StatelessWidget {
           ],
         ),
       ),
-    );
+    ),
+  );
   }
 }
 
