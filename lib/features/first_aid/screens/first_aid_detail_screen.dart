@@ -1,15 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../models/first_aid_guide.dart';
+import '../../../providers/settings_provider.dart';
 
-class FirstAidDetailScreen extends StatelessWidget {
+class FirstAidDetailScreen extends ConsumerWidget {
   final FirstAidGuide guide;
 
   const FirstAidDetailScreen({super.key, required this.guide});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final lang =
+        ref.watch(settingsProvider).whenOrNull(data: (s) => s.language) ?? 'en';
+    final isKh = lang == 'km' || lang == 'kh';
+    final title = guide.localizedTitle(lang);
+    final category = guide.localizedCategory(lang);
+    final steps = guide.localizedSteps(lang);
 
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
@@ -19,11 +27,7 @@ class FirstAidDetailScreen extends StatelessWidget {
             expandedHeight: 250,
             pinned: true,
             flexibleSpace: FlexibleSpaceBar(
-              title: Text(
-                guide.title,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
+              title: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis),
               background: guide.imageUrl.isNotEmpty
                   ? Image.network(
                       guide.imageUrl,
@@ -42,12 +46,12 @@ class FirstAidDetailScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildCategoryChip(theme),
+                  _buildCategoryChip(theme, category),
 
                   const SizedBox(height: 24),
 
                   Text(
-                    'First Aid Steps',
+                    isKh ? 'ជំហានជំនួយដំបូង' : 'First Aid Steps',
                     style: TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
@@ -57,15 +61,17 @@ class FirstAidDetailScreen extends StatelessWidget {
 
                   const SizedBox(height: 16),
 
-                  if (guide.steps.isEmpty)
-                    const Center(
+                  if (steps.isEmpty)
+                    Center(
                       child: Padding(
-                        padding: EdgeInsets.all(20),
-                        child: Text('No steps available.'),
+                        padding: const EdgeInsets.all(20),
+                        child: Text(
+                          isKh ? 'មិនមានជំហានទេ។' : 'No steps available.',
+                        ),
                       ),
                     )
                   else
-                    ...guide.steps.asMap().entries.map(
+                    ...steps.asMap().entries.map(
                       (entry) => _buildStepCard(
                         theme: theme,
                         number: entry.key + 1,
@@ -75,7 +81,7 @@ class FirstAidDetailScreen extends StatelessWidget {
 
                   const SizedBox(height: 30),
 
-                  _buildEmergencySection(theme),
+                  _buildEmergencySection(theme, isKh),
 
                   const SizedBox(height: 40),
                 ],
@@ -94,7 +100,7 @@ class FirstAidDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildCategoryChip(ThemeData theme) {
+  Widget _buildCategoryChip(ThemeData theme, String category) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(
@@ -102,7 +108,7 @@ class FirstAidDetailScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
-        guide.category,
+        category,
         style: TextStyle(
           color: theme.colorScheme.onErrorContainer,
           fontWeight: FontWeight.w600,
@@ -152,7 +158,7 @@ class FirstAidDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildEmergencySection(ThemeData theme) {
+  Widget _buildEmergencySection(ThemeData theme, bool isKh) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -166,7 +172,7 @@ class FirstAidDetailScreen extends StatelessWidget {
           const SizedBox(height: 12),
 
           Text(
-            'Emergency?',
+            isKh ? 'បន្ទាន់?' : 'Emergency?',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
@@ -177,7 +183,9 @@ class FirstAidDetailScreen extends StatelessWidget {
           const SizedBox(height: 8),
 
           Text(
-            'If the condition is serious, contact emergency services immediately.',
+            isKh
+                ? 'បើស្ថានភាពធ្ងន់ធ្ងរ សូមទាក់ទងសេវាបន្ទាន់ភ្លាមៗ។'
+                : 'If the condition is serious, contact emergency services immediately.',
             textAlign: TextAlign.center,
             style: TextStyle(color: theme.colorScheme.onErrorContainer),
           ),
@@ -188,7 +196,7 @@ class FirstAidDetailScreen extends StatelessWidget {
             width: double.infinity,
             child: ElevatedButton.icon(
               icon: const Icon(Icons.call),
-              label: const Text('Call Emergency'),
+              label: Text(isKh ? 'ហៅបន្ទាន់' : 'Call Emergency'),
               onPressed: () {
                 // TODO
                 // launchUrl(
@@ -204,7 +212,7 @@ class FirstAidDetailScreen extends StatelessWidget {
             width: double.infinity,
             child: OutlinedButton.icon(
               icon: const Icon(Icons.local_hospital),
-              label: const Text('Nearby Hospitals'),
+              label: Text(isKh ? 'មន្ទីរពេទ្យជិតខាង' : 'Nearby Hospitals'),
               onPressed: () {
                 // TODO
                 // Navigate to hospital screen
