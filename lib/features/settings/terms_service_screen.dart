@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../providers/settings_provider.dart';
 
@@ -66,7 +67,19 @@ class TermsOfServiceScreen extends ConsumerWidget {
         : 'We may update these terms when the app or backend changes. Continued use of the app means you accept the updated terms.';
 
     return Scaffold(
-      appBar: AppBar(title: Text(pageTitle)),
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_rounded),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/settings');
+            }
+          },
+        ),
+        title: Text(pageTitle),
+      ),
       body: ListView(
         padding: const EdgeInsets.all(24),
         children: [

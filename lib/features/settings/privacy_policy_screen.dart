@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../providers/settings_provider.dart';
 
@@ -70,7 +71,19 @@ class PrivacyPolicyScreen extends ConsumerWidget {
         : 'If you have questions about privacy or your stored profile data, use the app support channel provided by your organization.';
 
     return Scaffold(
-      appBar: AppBar(title: Text(pageTitle)),
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_rounded),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/settings');
+            }
+          },
+        ),
+        title: Text(pageTitle),
+      ),
       body: ListView(
         padding: const EdgeInsets.all(24),
         children: [
